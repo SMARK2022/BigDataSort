@@ -1,0 +1,13 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "array": "cpp",
+        "random": "cpp",
+        "stdio.h": "c",
+        "string": "c",
+        "string_view": "c",
+        "time.h": "c"
+    }
+}
