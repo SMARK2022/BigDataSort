@@ -7,7 +7,7 @@
 #include <cstring>
 #include <chrono>
 
-#define INIT_LINES 1000000
+#define INIT_LINES 10000000
 
 using namespace std;
 
@@ -16,7 +16,7 @@ typedef struct Str
     char character[16];
 } Str;
 
-vector<Str> data_str; // ç»“æ„ä½“æ•°ç»„ç”¨äºå­˜å‚¨æ•°æ®
+vector<Str> data_str; // ½á¹¹ÌåÊı×éÓÃÓÚ´æ´¢Êı¾İ
 
 short Cmp(Str a, Str b)
 {
@@ -32,67 +32,67 @@ short Cmp(Str a, Str b)
 
 int main()
 {
-    // å¼€å§‹è®¡æ—¶
+    // ¿ªÊ¼¼ÆÊ±
     auto start = std::chrono::steady_clock::now();
 
-    // æ‰“å¼€æ–‡ä»¶
+    // ´ò¿ªÎÄ¼ş
     Str tmp;
     data_str.reserve(INIT_LINES);
-    std::ifstream file_read("test.txt", ios::in);
+    std::ifstream file_read("DATA.txt", ios::in);
     std::ofstream file_write("123.txt", ios::out);
     if (!file_read.is_open())
     {
-        std::cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶" << std::endl;
+        std::cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << std::endl;
         return 0;
     }
     if (!file_write.is_open())
     {
-        std::cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶" << std::endl;
+        std::cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << std::endl;
         return 0;
     }
 
-    long long count = 0; // ç”¨äºè®°å½•è¯»å–çš„è¡Œæ•°
+    long long count = 0; // ÓÃÓÚ¼ÇÂ¼¶ÁÈ¡µÄĞĞÊı
 
-    // é€è¡Œè¯»å–æ–‡ä»¶å†…å®¹
+    // ÖğĞĞ¶ÁÈ¡ÎÄ¼şÄÚÈİ
     std::string line;
-    auto read_start = std::chrono::steady_clock::now(); // è¯»å–æ•°æ®é˜¶æ®µå¼€å§‹è®¡æ—¶
+    auto read_start = std::chrono::steady_clock::now(); // ¶ÁÈ¡Êı¾İ½×¶Î¿ªÊ¼¼ÆÊ±
     while (std::getline(file_read, line))
     {
-        // å°†å­—ç¬¦ä¸²å¤åˆ¶åˆ°ç»“æ„ä½“æ•°ç»„ä¸­
+        // ½«×Ö·û´®¸´ÖÆµ½½á¹¹ÌåÊı×éÖĞ
         strncpy(tmp.character, line.c_str(), 16 * sizeof(char));
         data_str.push_back(tmp);
 
         count++;
     }
-    auto read_end = std::chrono::steady_clock::now(); // è¯»å–æ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto read_end = std::chrono::steady_clock::now(); // ¶ÁÈ¡Êı¾İ½×¶Î½áÊø¼ÆÊ±
 
-    // å…³é—­æ–‡ä»¶
+    // ¹Ø±ÕÎÄ¼ş
     file_read.close();
 
-    auto sort_start = std::chrono::steady_clock::now(); // æ’åºé˜¶æ®µå¼€å§‹è®¡æ—¶
-    // tim::timsort(data_str.begin(), data_str.end(), Cmp);
-    std::stable_sort(data_str.begin(), data_str.end(), Cmp);
-    auto sort_end = std::chrono::steady_clock::now(); // æ’åºé˜¶æ®µç»“æŸè®¡æ—¶
+    auto sort_start = std::chrono::steady_clock::now(); // ÅÅĞò½×¶Î¿ªÊ¼¼ÆÊ±
+    tim::timsort(data_str.begin(), data_str.end(), Cmp);
+    // std::stable_sort(data_str.begin(), data_str.end(), Cmp);
+    auto sort_end = std::chrono::steady_clock::now(); // ÅÅĞò½×¶Î½áÊø¼ÆÊ±
 
-    // å†™å‡ºæ•°æ®é˜¶æ®µå¼€å§‹è®¡æ—¶
+    // Ğ´³öÊı¾İ½×¶Î¿ªÊ¼¼ÆÊ±
     auto write_start = std::chrono::steady_clock::now();
     // for (long long i = 0; i < count; i++)
     //     file_write << data_str[i].character << endl;
     // file_write.close();
-    auto write_end = std::chrono::steady_clock::now(); // å†™å‡ºæ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto write_end = std::chrono::steady_clock::now(); // Ğ´³öÊı¾İ½×¶Î½áÊø¼ÆÊ±
 
-    // è®¡ç®—æ¯ä¸ªé˜¶æ®µçš„è€—æ—¶ï¼ˆæ¯«ç§’ä¸ºå•ä½ï¼‰
+    // ¼ÆËãÃ¿¸ö½×¶ÎµÄºÄÊ±£¨ºÁÃëÎªµ¥Î»£©
     auto read_duration = std::chrono::duration_cast<std::chrono::milliseconds>(read_end - read_start).count();
     auto sort_duration = std::chrono::duration_cast<std::chrono::milliseconds>(sort_end - sort_start).count();
     auto write_duration = std::chrono::duration_cast<std::chrono::milliseconds>(write_end - write_start).count();
 
-    // è¾“å‡ºæ¯ä¸ªé˜¶æ®µçš„è€—æ—¶
-    std::cout << "è¯»å–æ•°æ®è€—æ—¶: " << read_duration << " æ¯«ç§’" << std::endl;
-    std::cout << "æ’åºé˜¶æ®µè€—æ—¶: " << sort_duration << " æ¯«ç§’" << std::endl;
-    std::cout << "å†™å‡ºæ•°æ®è€—æ—¶: " << write_duration << " æ¯«ç§’" << std::endl;
-    std::cout << "æ€»å…±å¤„ç†è€—æ—¶: " << read_duration + sort_duration + write_duration << " æ¯«ç§’" << std::endl;
+    // Êä³öÃ¿¸ö½×¶ÎµÄºÄÊ±
+    std::cout << "¶ÁÈ¡Êı¾İºÄÊ±: " << read_duration << " ºÁÃë" << std::endl;
+    std::cout << "ÅÅĞò½×¶ÎºÄÊ±: " << sort_duration << " ºÁÃë" << std::endl;
+    std::cout << "Ğ´³öÊı¾İºÄÊ±: " << write_duration << " ºÁÃë" << std::endl;
+    std::cout << "×Ü¹²´¦ÀíºÄÊ±: " << read_duration + sort_duration + write_duration << " ºÁÃë" << std::endl;
 
-    std::cout << "æ•°æ®è¡Œæ•° (n): " << count << std::endl;
+    std::cout << "Êı¾İĞĞÊı (n): " << count << std::endl;
 
     return 0;
 }

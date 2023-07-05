@@ -7,7 +7,7 @@
 #include <cstring>
 #include <chrono>
 
-#define INIT_LINES 1000000
+#define INIT_LINES 10000000
 
 using namespace std;
 

@@ -19,8 +19,8 @@ Nine freshmen's project which can sort 120G data of strings.
 ## 目前的文件组成：
 
 - `generate.cpp`：用来生成随机字符串
-- `SortStr.cpp`：基于 STL vector<Str> 自定义数据类型 容器实现的 stable_sort 与 tim_sort，速度大概单线程 `160M/5s`
-- `SortString.cpp`：基于 STL vector<std::string> 容器实现的 stable_sort 与 tim_sort，速度大概单线程 `160M/10s`
+- `SortStr.cpp`：基于 STL vector<Str> 自定义数据类型 容器实现的 stable_sort 与 tim_sort，速度大概单线程 `160M/3s`, `1.6G/25s`, 打开`-O3`优化
+- `SortString.cpp`：基于 STL vector<std::string> 容器实现的 stable_sort 与 tim_sort，速度大概单线程 `160M/6s`，打开`-O3`优化
 - `SortString.java`: 基于 Java String 列表调用官方默认的 TimSort 方法，速度大概多线程 `160M/5s`
 
 ## 我们可以得出一些经验：
