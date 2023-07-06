@@ -26,7 +26,8 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-lwsock32"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -38,7 +39,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "调试器生成的任务。"
+            "detail": "编译器: D:\\include\\mingw64\\bin\\g++.exe"
         }
     ]
 }
