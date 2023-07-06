@@ -67,7 +67,7 @@ int main()
 {
     srand(time(0));
 
-    if (!(outputFile = fopen("DATA16G.txt", "w")))
+    if (!(outputFile = fopen("DATA24G.txt", "wb")))
     {
         std::cerr << "Failed to open file." << std::endl;
         return 1;
@@ -80,7 +80,7 @@ int main()
     std::vector<std::thread> threads;
     for (int i = 0; i < numThreads; i++)
     {
-        threads.emplace_back(generateAndWriteRandomStrings, numLines / numThreads, stringLength, i);
+        threads.emplace_back(generateAndWriteRandomStrings, i < numThreads - 1 ? numLines / numThreads : numLines - (numLines / numThreads) * (numThreads - 1), stringLength, i);
     }
 
     // Wait for all threads to finish

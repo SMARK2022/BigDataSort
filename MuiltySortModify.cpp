@@ -18,7 +18,7 @@ using namespace std;
 
 typedef struct Str
 {
-    char character[15];
+    short character[15];
 } Str;
 
 vector<vector<Str>> thread_data_str; // 多个线程的结构体数组
