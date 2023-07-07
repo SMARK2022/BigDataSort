@@ -6,6 +6,13 @@
             "name": "SortStrings",
             "request": "launch",
             "mainClass": "SortStrings",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "SortStrings",
+            "request": "launch",
+            "mainClass": "SortStrings",
             "projectName": "BigDataSort_87b7a1a2"
         },
         {

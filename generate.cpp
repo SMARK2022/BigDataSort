@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <random>
 
 std::mutex mtx;
 FILE *outputFile;
@@ -22,9 +23,13 @@ Str generateRandomString(int length)
     Str randomString;
     static const char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, sizeof(alphabet) - 2);
+
     for (int i = 0; i < length; i++)
     {
-        int index = rand() % (sizeof(alphabet) - 1);
+        int index = dis(gen);
         randomString.character[i] = alphabet[index];
     }
     randomString.character[length] = '\n';
@@ -33,7 +38,7 @@ Str generateRandomString(int length)
 
 void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
 {
-    int batchSize = 10485760;
+    int batchSize = 805306368;
     int numBatches = (numLines + batchSize - 1) / batchSize;
 
     for (int batch = 0; batch < numBatches; batch++)
@@ -66,14 +71,13 @@ void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
 int main()
 {
     srand(time(0));
-
-    if (!(outputFile = fopen("DATA12G.txt", "wb")))
+    if (!(outputFile = fopen("DATA1G.txt", "wb")))
     {
         std::cerr << "Failed to open file." << std::endl;
         return 1;
     }
 
-    int numLines = 805306368;
+    int numLines = 67108864;
     int stringLength = 15;
     int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
 

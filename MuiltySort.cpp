@@ -11,7 +11,7 @@
 #include <condition_variable>
 
 #define INIT_LINES 10000000
-#define FILE_READ_NAME "DATA24G.txt"
+#define FILE_READ_NAME "DATA1G.txt"
 #define FILE_SEND_NAME "123.txt"
 
 using namespace std;

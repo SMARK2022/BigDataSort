@@ -1,4 +1,5 @@
 #include <iostream>
+#include <windows.h>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -11,30 +12,46 @@
 #include <condition_variable>
 
 #define INIT_LINES 10000000
+#define BAR_WIDTH 70
+#define NUM_STR_HIGH 676
 #define FILE_SEND_NAME "123.txt"
 
 std::string filename_READ;
 
 using namespace std;
 
-typedef struct Str
-{
-    short High;
-    long Low;
-} Str;
+std::mutex mutex_data;                             // 多线程数据锁
+std::mutex mutex_display;                          // 多线程输出锁
+vector<vector<vector<long long>>> thread_data_str; // 多个线程的结构体数组
+vector<long long> thread_data_num;                 // 多个线程的结构体数组
 
-std::mutex new_temp_data_mutex;
-vector<vector<Str>> thread_data_str; // 多个线程的结构体数组
-
-short Cmp(Str a, Str b)
+inline bool Cmp(long long a, long long b)
 {
-    if (a.High != b.High)
-        return a.High < b.High;
-    else
-        return a.Low < b.Low;
+    return a < b;
 }
 
-void read_lines(long long start, long long end, vector<Str> &data)
+void updateProgressBar(int progress, int total)
+{
+    float progressPercentage = (float)progress / total;
+    int progressWidth = BAR_WIDTH * progressPercentage;
+
+    std::cout << "[";
+    for (int i = 0; i < progressWidth; ++i)
+    {
+        std::cout << "=";
+    }
+    std::cout << ">";
+
+    for (int i = progressWidth; i < BAR_WIDTH; ++i)
+    {
+        std::cout << " ";
+    }
+
+    std::cout << "] " << int(progressPercentage * 100) << "%\r";
+    std::cout.flush();
+}
+
+void read_lines(long long start, long long rows, vector<vector<long long>> &data, long long &num)
 {
     ifstream file_read(filename_READ, ios::in);
     if (!file_read.is_open())
@@ -42,83 +59,82 @@ void read_lines(long long start, long long end, vector<Str> &data)
         cout << "无法打开文件" << endl;
         return;
     }
-
+    data.resize(NUM_STR_HIGH);
     string line;
-    long long count = 0;
-    while (getline(file_read, line))
+    num = 0;
+    file_read.seekg(start * 16, std::ios::beg);
+    while (num < rows && getline(file_read, line))
     {
-        if (count >= start && count < end)
+        long long tmp_LowStr = 0;
+        for (int i = 2; i < 15; i++)
         {
-            char tmp_char[15];
-            Str tmp_Str;
-            strncpy(tmp_char, line.c_str(), 15 * sizeof(char));
-            tmp_Str.High = (tmp_char[0] - 'a') * 26 + tmp_char[1] - 'a';
-            tmp_Str.Low = 0;
-            for (int i = 2; i < 15; i++)
-            {
-                tmp_Str.Low = tmp_Str.Low * 26 + tmp_char[i] - 'a';
-            }
-            data.push_back(tmp_Str);
+            tmp_LowStr = tmp_LowStr * 26 + line[i] - 'a';
         }
-        count++;
-
-        if (count >= end)
-            break;
+        data[(line[0] - 'a') * 26 + line[1] - 'a'].push_back(tmp_LowStr);
+        num++;
     }
-
     file_read.close();
 }
 
-void sort_data(int thread_id, vector<Str> &data)
+void sort_data(int thread_id, vector<vector<long long>> &data)
 {
     auto sort_start = chrono::steady_clock::now();
-    tim::timsort(data.begin(), data.end(), Cmp);
+    for (int i = 0; i < NUM_STR_HIGH; i++)
+        tim::timsort(data[i].begin(), data[i].end(), Cmp);
     auto sort_end = chrono::steady_clock::now(); // 写出数据阶段结束计时
     auto sort_duration = chrono::duration_cast<chrono::milliseconds>(sort_end - sort_start).count();
-    std::cout << "分段排序耗时: " << sort_duration << " 毫秒" << endl;
+    mutex_display.lock();
+    std::cout << "Thread" << thread_id << " 分段排序耗时: " << sort_duration << " 毫秒" << endl;
+    mutex_display.unlock();
 }
 // 归并函数
-void merge(vector<Str> &data1, vector<Str> &data2, vector<Str> &merged_data)
+void merge(vector<vector<long long>> &data1, vector<vector<long long>> &data2, vector<vector<long long>> &merged_data_collection, int i)
 {
+    merged_data_collection.reserve(NUM_STR_HIGH);
     auto merge_start = chrono::steady_clock::now();
-    int i = 0, j = 0;
-    while (i < data1.size() && j < data2.size())
+    for (int high = 0; high < NUM_STR_HIGH; high++)
     {
-        if (Cmp(data1[i], data2[j]))
+        vector<long long> dataA, dataB;
+        vector<long long> merged_data;
+        long long i = 0, j = 0;
+        dataA.swap(data1[high]);
+        dataB.swap(data2[high]);
+
+        while (i < dataA.size() && j < dataB.size())
         {
-            merged_data.push_back(data1[i]);
+            if (Cmp(dataA[i], dataB[j]))
+            {
+                merged_data.push_back(dataA[i]);
+                i++;
+            }
+            else
+            {
+                merged_data.push_back(dataB[j]);
+                j++;
+            }
+        }
+
+        while (i < dataA.size())
+        {
+            merged_data.push_back(dataA[i]);
             i++;
         }
-        else
+        while (j < dataB.size())
         {
-            merged_data.push_back(data2[j]);
+            merged_data.push_back(dataB[j]);
             j++;
         }
+        merged_data_collection.push_back(merged_data);
     }
-
-    while (i < data1.size())
-    {
-        merged_data.push_back(data1[i]);
-        i++;
-    }
-    data1.clear();
-    vector<Str>().swap(data1);
-
-    while (j < data2.size())
-    {
-        merged_data.push_back(data2[j]);
-        j++;
-    }
-    data2.clear();
-    vector<Str>().swap(data2);
-
     auto merge_end = chrono::steady_clock::now(); // 写出数据阶段结束计时
     auto merge_duration = chrono::duration_cast<chrono::milliseconds>(merge_end - merge_start).count();
-    std::cout << "归并排序耗时: " << merge_duration << " 毫秒" << endl;
+    mutex_display.lock();
+    std::cout << "Thread" << i << " 归并排序耗时: " << merge_duration << " 毫秒" << endl;
+    mutex_display.unlock();
 }
 
 // 多路归并函数
-void multi_merge(vector<vector<Str>> &thread_data_str, vector<Str> &merged_data)
+void multi_merge(vector<vector<vector<long long>>> &thread_data_str, vector<vector<long long>> &merged_data)
 {
     auto merge_start = chrono::steady_clock::now();
     int thread_count = thread_data_str.size();
@@ -126,7 +142,7 @@ void multi_merge(vector<vector<Str>> &thread_data_str, vector<Str> &merged_data)
     // 递归归并
     while (thread_data_str.size() > 1)
     {
-        vector<vector<Str>> new_temp_data;
+        vector<vector<vector<long long>>> new_temp_data;
 
         // 使用多线程进行归并
         vector<thread> merge_threads;
@@ -137,11 +153,11 @@ void multi_merge(vector<vector<Str>> &thread_data_str, vector<Str> &merged_data)
                 // 创建一个新线程进行归并
                 merge_threads.emplace_back([i, &thread_data_str, &new_temp_data]()
                                            {
-                    vector<Str> merged;
-                    merge(thread_data_str[i], thread_data_str[i + 1], merged);
+                    vector<vector<long long>> merged;
+                    merge(thread_data_str[i], thread_data_str[i + 1], merged,i);
                     // 使用互斥锁保护共享数据
-                    lock_guard<mutex> lock(new_temp_data_mutex);
-                    new_temp_data.push_back(merged); });
+                    mutex_data.lock();
+                    new_temp_data.push_back(merged); mutex_data.unlock(); });
             }
             else
             {
@@ -154,18 +170,19 @@ void multi_merge(vector<vector<Str>> &thread_data_str, vector<Str> &merged_data)
         {
             thread.join();
         }
+        std::cout << "----------------------------------------------------------------------" << std::endl;
 
         thread_data_str = new_temp_data;
     }
 
     // 最后剩下的数据即为最终的归并结果
-    merged_data = thread_data_str[0];
+    merged_data.swap(thread_data_str[0]);
     auto merge_end = chrono::steady_clock::now();
     auto merge_duration = chrono::duration_cast<chrono::milliseconds>(merge_end - merge_start).count();
     std::cout << "归并完成耗时: " << merge_duration << " 毫秒" << endl;
 }
 
-void save_data(const vector<Str> &data)
+void save_data(const vector<vector<long long>> &data_collection)
 {
     auto write_start = chrono::steady_clock::now();
     ofstream file_write(FILE_SEND_NAME, ios::out);
@@ -174,10 +191,13 @@ void save_data(const vector<Str> &data)
         cout << "无法打开文件" << endl;
         return;
     }
-
-    for (const auto &item : data)
+    for (int high = 0; high < NUM_STR_HIGH; high++)
     {
-        file_write << (item.High / 26) + 'a' << item.High % 26 + 'a' << endl;
+
+        for (const auto &item : data_collection[high])
+        {
+            file_write << (high / 26) + 'a' << high % 26 + 'a' << endl;
+        }
     }
 
     file_write.close();
@@ -195,20 +215,20 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        std::cout << "Please provide a file name." << std::endl;
+        std::cout << "请提供文件名" << std::endl;
         return 1; // 返回非零值表示程序异常退出
     }
 
     filename_READ = argv[1];
-
-    std::cout << "File name: " << filename_READ << std::endl;
+    // filename_READ = "DATA1G.txt";
+    std::cout << "文件名: " << filename_READ << std::endl;
 
     auto all_start = chrono::steady_clock::now();  // 读取数据阶段结束计时
     auto read_start = chrono::steady_clock::now(); // 读取数据阶段开始计时
 
     std::ifstream file_read(filename_READ, ios::in);
     std::ofstream file_write(FILE_SEND_NAME, ios::out);
-    long long count = 0; // 用于记录读取的行数
+    long long count; // 用于记录读取的行数
     long long fileSize;
 
     if (file_read.is_open())
@@ -241,25 +261,46 @@ int main(int argc, char *argv[])
     long long lines_per_thread = count / thread_count;
 
     thread_data_str.resize(thread_count);
+    thread_data_num.resize(thread_count);
 
     // 读取数据阶段的多线程实现
     vector<thread> read_threads;
     for (int i = 0; i < thread_count; i++)
     {
-        int start = i * lines_per_thread;
-        int end = (i == (thread_count - 1)) ? count : (i + 1) * lines_per_thread;
+        long long start = i * lines_per_thread;
+        long long end = (i == (thread_count - 1)) ? count : lines_per_thread * (i + 1);
 
-        read_threads.emplace_back(read_lines, start, end, ref(thread_data_str[i]));
+        read_threads.emplace_back(read_lines, start, end - start, ref(thread_data_str[i]), ref(thread_data_num[i]));
     }
 
-    for (auto &t : read_threads)
+    while (true)
     {
-        t.join();
+        std::chrono::milliseconds delay(250); // 延时时间为0.5秒
+
+        long long tmp_read_lines = 0;
+        for (int i = 0; i < thread_count; i++)
+        {
+            tmp_read_lines = tmp_read_lines + thread_data_num[i];
+            // cout << i << " " << thread_data_num[i] << endl;
+        }
+        updateProgressBar(int((double)tmp_read_lines * 10000 / count), 10000);
+        if (tmp_read_lines == count)
+        {
+            file_read.close();
+            std::cout << std::endl;
+            for (auto &t : read_threads)
+            {
+                t.join();
+            }
+            break;
+        }
+        std::this_thread::sleep_for(delay); // 延时0.5秒
     }
 
     auto read_end = chrono::steady_clock::now(); // 读取数据阶段结束计时
     auto read_duration = chrono::duration_cast<chrono::milliseconds>(read_end - read_start).count();
     cout << "读取数据耗时: " << read_duration << " 毫秒" << endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
 
     // 排序阶段的多线程实现
     vector<thread> sort_threads;
@@ -272,10 +313,12 @@ int main(int argc, char *argv[])
     {
         t.join();
     }
+    std::cout << "----------------------------------------------------------------------" << std::endl;
 
     // 归并排序阶段的多线程实现
-    vector<Str> merged_data;
+    vector<vector<long long>> merged_data;
     multi_merge(thread_data_str, merged_data);
+    std::cout << "----------------------------------------------------------------------" << std::endl;
 
     // 创建新的线程保存数据
     // thread save_thread(save_data, ref(merged_data));

@@ -8,7 +8,7 @@ import java.util.List;
 public class SortStrings {
 
     public static void main(String[] args) {
-        String fileName = "test.txt";
+        String fileName = "DATA1G.txt";
         List<String> strings = readStringsFromFile(fileName);
         long startTime = System.currentTimeMillis();
         sortStrings(strings);
