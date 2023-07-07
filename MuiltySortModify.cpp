@@ -20,9 +20,9 @@ std::string filename_READ;
 
 using namespace std;
 
-std::mutex mutex_data;                             // 多线程数据锁
-std::mutex mutex_display;                          // 多线程输出锁
-vector<vector<vector<long long>>> thread_data_str; // 存放不同线程所处理的数据，三个维度分别为[线程][桶编号(前两位字符的26进制数字)][数据(以long long存储后13位)]
+std::mutex mutex_data;                             // 多线程数据锁，避免同时对数据进行写入操作
+std::mutex mutex_display;                          // 多线程输出锁，避免不同线程输出结果相互交错影响观察
+vector<vector<vector<long long>>> thread_data_str; // 存放不同线程所处理的数据，三个维度分别为[线程][桶编号(前两位字符的26进制数字)][数据编号(以long long存储后13位)]
 vector<long long> thread_data_num;                 // 存放着不同线程所处理数据的总量（现在是给进度条用的，可与进度条功能一同移去）
 
 inline bool Cmp(long long a, long long b) // cmp比较函数，使用inline内联优化 (可以baidu)
