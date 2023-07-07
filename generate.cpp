@@ -67,13 +67,13 @@ int main()
 {
     srand(time(0));
 
-    if (!(outputFile = fopen("DATA24G.txt", "wb")))
+    if (!(outputFile = fopen("DATA12G.txt", "wb")))
     {
         std::cerr << "Failed to open file." << std::endl;
         return 1;
     }
 
-    int numLines = 1610612736;
+    int numLines = 805306368;
     int stringLength = 15;
     int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
 
