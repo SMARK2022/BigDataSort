@@ -37,10 +37,16 @@ class LongArray {
   }
 
   public long get(int index) {
+    if (index < 0 || index >= size) {
+      throw new IndexOutOfBoundsException();
+    }
     return arr[index];
   }
 
   public void set(int index, long value) {
+    if (index < 0 || index >= size) {
+      throw new IndexOutOfBoundsException();
+    }
     arr[index] = value;
   }
 

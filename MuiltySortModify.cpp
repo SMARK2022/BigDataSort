@@ -20,17 +20,17 @@ std::string filename_READ;
 
 using namespace std;
 
-std::mutex mutex_data;                             // å¤šçº¿ç¨‹æ•°æ®é”ï¼Œé¿å…åŒæ—¶å¯¹æ•°æ®è¿›è¡Œå†™å…¥æ“ä½œ
-std::mutex mutex_display;                          // å¤šçº¿ç¨‹è¾“å‡ºé”ï¼Œé¿å…ä¸åŒçº¿ç¨‹è¾“å‡ºç»“æœç›¸äº’äº¤é”™å½±å“è§‚å¯Ÿ
-vector<vector<vector<long long>>> thread_data_str; // å­˜æ”¾ä¸åŒçº¿ç¨‹æ‰€å¤„ç†çš„æ•°æ®ï¼Œä¸‰ä¸ªç»´åº¦åˆ†åˆ«ä¸º[çº¿ç¨‹][æ¡¶ç¼–å·(å‰ä¸¤ä½å­—ç¬¦çš„26è¿›åˆ¶æ•°å­—)][æ•°æ®ç¼–å·(ä»¥long longå­˜å‚¨å13ä½)]
-vector<long long> thread_data_num;                 // å­˜æ”¾ç€ä¸åŒçº¿ç¨‹æ‰€å¤„ç†æ•°æ®çš„æ€»é‡ï¼ˆç°åœ¨æ˜¯ç»™è¿›åº¦æ¡ç”¨çš„ï¼Œå¯ä¸è¿›åº¦æ¡åŠŸèƒ½ä¸€åŒç§»å»ï¼‰
+std::mutex mutex_data;                             // ¶àÏß³ÌÊı¾İËø£¬±ÜÃâÍ¬Ê±¶ÔÊı¾İ½øĞĞĞ´Èë²Ù×÷
+std::mutex mutex_display;                          // ¶àÏß³ÌÊä³öËø£¬±ÜÃâ²»Í¬Ïß³ÌÊä³ö½á¹ûÏà»¥½»´íÓ°Ïì¹Û²ì
+vector<vector<vector<long long>>> thread_data_str; // ´æ·Å²»Í¬Ïß³ÌËù´¦ÀíµÄÊı¾İ£¬Èı¸öÎ¬¶È·Ö±ğÎª[Ïß³Ì][Í°±àºÅ(Ç°Á½Î»×Ö·ûµÄ26½øÖÆÊı×Ö)][Êı¾İ±àºÅ(ÒÔlong long´æ´¢ºó13Î»)]
+vector<long long> thread_data_num;                 // ´æ·Å×Å²»Í¬Ïß³ÌËù´¦ÀíÊı¾İµÄ×ÜÁ¿£¨ÏÖÔÚÊÇ¸ø½ø¶ÈÌõÓÃµÄ£¬¿ÉÓë½ø¶ÈÌõ¹¦ÄÜÒ»Í¬ÒÆÈ¥£©
 
-inline bool Cmp(long long a, long long b) // cmpæ¯”è¾ƒå‡½æ•°ï¼Œä½¿ç”¨inlineå†…è”ä¼˜åŒ– (å¯ä»¥baidu)
+inline bool Cmp(long long a, long long b) // cmp±È½Ïº¯Êı£¬Ê¹ÓÃinlineÄÚÁªÓÅ»¯ (¿ÉÒÔbaidu)
 {
     return a < b;
 }
 
-void updateProgressBar(int progress, int total) // è¿›åº¦æ¡æ›´æ–°å‡½æ•°(éå¿…é¡»)
+void updateProgressBar(int progress, int total) // ½ø¶ÈÌõ¸üĞÂº¯Êı(·Ç±ØĞë)
 {
     float progressPercentage = (float)progress / total;
     int progressWidth = BAR_WIDTH * progressPercentage;
@@ -52,12 +52,12 @@ void updateProgressBar(int progress, int total) // è¿›åº¦æ¡æ›´æ–°å‡½æ•°(éå¿…é
 }
 
 void read_lines(long long start, long long rows, vector<vector<long long>> &data, long long &num)
-// æŒ‰ç…§è¯»å–èµ·å§‹ä½ç½®ã€è¯»å–è¡Œæ•°è¿›è¡Œè¯»å–ï¼Œå°†æ•°æ®ä»¥[æ¡¶ç¼–å·][æ•°æ®è¯»å…¥æ¬¡åº]çš„æ ¼å¼å‚¨å­˜åœ¨dataè¿™ä¸ªå¼•ç”¨å˜é‡ä¸­ï¼Œå¹¶é€šè¿‡numå®æ—¶è¾“å‡ºè¿›åº¦
+// °´ÕÕ¶ÁÈ¡ÆğÊ¼Î»ÖÃ¡¢¶ÁÈ¡ĞĞÊı½øĞĞ¶ÁÈ¡£¬½«Êı¾İÒÔ[Í°±àºÅ][Êı¾İ¶ÁÈë´ÎĞò]µÄ¸ñÊ½´¢´æÔÚdataÕâ¸öÒıÓÃ±äÁ¿ÖĞ£¬²¢Í¨¹ınumÊµÊ±Êä³ö½ø¶È
 {
     ifstream file_read(filename_READ, ios::in);
     if (!file_read.is_open())
     {
-        cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶" << endl;
+        cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << endl;
         return;
     }
     data.resize(NUM_STR_HIGH);
@@ -69,40 +69,40 @@ void read_lines(long long start, long long rows, vector<vector<long long>> &data
         long long tmp_LowStr = 0;
         for (int i = 2; i < 15; i++)
         {
-            tmp_LowStr = tmp_LowStr * 26 + line[i] - 'a'; // å°†å13ä½è½¬æ¢2è¿›åˆ¶ç¼–ç 
+            tmp_LowStr = tmp_LowStr * 26 + line[i] - 'a'; // ½«ºó13Î»×ª»»2½øÖÆ±àÂë
         }
-        data[(line[0] - 'a') * 26 + line[1] - 'a'].push_back(tmp_LowStr); // è®¡ç®—å‰ä¸¤ä½æ‰€å¯¹åº”çš„æ¡¶ç¼–å·æ•°
-        num++;                                                            // è¿›åº¦+1
+        data[(line[0] - 'a') * 26 + line[1] - 'a'].push_back(tmp_LowStr); // ¼ÆËãÇ°Á½Î»Ëù¶ÔÓ¦µÄÍ°±àºÅÊı
+        num++;                                                            // ½ø¶È+1
     }
     file_read.close();
 }
 
-void sort_data(int thread_id, vector<vector<long long>> &data) // å•çº¯æ˜¯å¯¹timsortçš„å°è£…ï¼ŒåŠ äº†è®¡æ—¶æ˜¾ç¤ºåŠŸèƒ½
+void sort_data(int thread_id, vector<vector<long long>> &data) // µ¥´¿ÊÇ¶ÔtimsortµÄ·â×°£¬¼ÓÁË¼ÆÊ±ÏÔÊ¾¹¦ÄÜ
 {
     auto sort_start = chrono::steady_clock::now();
     for (int i = 0; i < NUM_STR_HIGH; i++)
         tim::timsort(data[i].begin(), data[i].end(), Cmp);
-    auto sort_end = chrono::steady_clock::now(); // å†™å‡ºæ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto sort_end = chrono::steady_clock::now(); // Ğ´³öÊı¾İ½×¶Î½áÊø¼ÆÊ±
     auto sort_duration = chrono::duration_cast<chrono::milliseconds>(sort_end - sort_start).count();
     mutex_display.lock();
-    std::cout << "Thread" << thread_id << " åˆ†æ®µæ’åºè€—æ—¶: " << sort_duration << " æ¯«ç§’" << endl; // ä¸ºäº†é¿å…ä¸¤ä¸ªçº¿ç¨‹åŒæ—¶æ‰“å°ï¼Œé‡‡ç”¨é”çš„æ–¹å¼
+    std::cout << "Thread" << thread_id << " ·Ö¶ÎÅÅĞòºÄÊ±: " << sort_duration << " ºÁÃë" << endl; // ÎªÁË±ÜÃâÁ½¸öÏß³ÌÍ¬Ê±´òÓ¡£¬²ÉÓÃËøµÄ·½Ê½
     mutex_display.unlock();
 }
 
 void merge(vector<vector<long long>> &data1, vector<vector<long long>> &data2, vector<vector<long long>> &merged_data_collection, int i)
-// äºŒè·¯å½’å¹¶å‡½æ•°ï¼Œå®ç°å¯¹ä¸¤å †æ¡¶ä¸­ç›¸åŒæ¡¶ç¼–å·çš„ä¸¤ä¸ªæ¡¶è¿›è¡Œå½’å¹¶ï¼Œæœ€åç”Ÿæˆä¸€å †æ¡¶
+// ¶şÂ·¹é²¢º¯Êı£¬ÊµÏÖ¶ÔÁ½¶ÑÍ°ÖĞÏàÍ¬Í°±àºÅµÄÁ½¸öÍ°½øĞĞ¹é²¢£¬×îºóÉú³ÉÒ»¶ÑÍ°
 {
     merged_data_collection.reserve(NUM_STR_HIGH);
     auto merge_start = chrono::steady_clock::now();
-    for (int high = 0; high < NUM_STR_HIGH; high++) // æŒ‰æ¡¶ç¼–å·å¼€å§‹è¿›è¡Œå½’å¹¶
+    for (int high = 0; high < NUM_STR_HIGH; high++) // °´Í°±àºÅ¿ªÊ¼½øĞĞ¹é²¢
     {
         vector<long long> dataA, dataB;
         vector<long long> merged_data;
         long long i = 0, j = 0;
-        dataA.swap(data1[high]); // ç›´æ¥äº¤æ¢ï¼Œé¿å…å¤åˆ¶å’ŒæŒ‡é’ˆè®¡ç®—å¸¦æ¥çš„é¢å¤–å†…å­˜ä¸æ€§èƒ½å¼€é”€
+        dataA.swap(data1[high]); // Ö±½Ó½»»»£¬±ÜÃâ¸´ÖÆºÍÖ¸Õë¼ÆËã´øÀ´µÄ¶îÍâÄÚ´æÓëĞÔÄÜ¿ªÏú
         dataB.swap(data2[high]);
 
-        while (i < dataA.size() && j < dataB.size()) // æ­£å¸¸å½’å¹¶æµç¨‹
+        while (i < dataA.size() && j < dataB.size()) // Õı³£¹é²¢Á÷³Ì
         {
             if (Cmp(dataA[i], dataB[j]))
             {
@@ -128,130 +128,130 @@ void merge(vector<vector<long long>> &data1, vector<vector<long long>> &data2, v
         }
         merged_data_collection.push_back(merged_data);
     }
-    auto merge_end = chrono::steady_clock::now(); // å†™å‡ºæ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto merge_end = chrono::steady_clock::now(); // Ğ´³öÊı¾İ½×¶Î½áÊø¼ÆÊ±
     auto merge_duration = chrono::duration_cast<chrono::milliseconds>(merge_end - merge_start).count();
     mutex_display.lock();
-    std::cout << "Thread" << i << " å½’å¹¶æ’åºè€—æ—¶: " << merge_duration << " æ¯«ç§’" << endl; // åŒæ ·æœ‰ä¸ªæ‰“å°é”
+    std::cout << "Thread" << i << " ¹é²¢ÅÅĞòºÄÊ±: " << merge_duration << " ºÁÃë" << endl; // Í¬ÑùÓĞ¸ö´òÓ¡Ëø
     mutex_display.unlock();
 }
 
-// å¤šè·¯å½’å¹¶å‡½æ•°
-void multi_merge(vector<vector<vector<long long>>> &thread_data_str, vector<vector<long long>> &merged_data) // æ ¸å¿ƒæ€æƒ³ï¼šå°†å¤šçº¿ç¨‹ç”Ÿæˆçš„å¤šå †æ•°æ®é€šè¿‡ä¸¤è·¯å½’å¹¶è¿›è¡Œå¤šçº¿ç¨‹å½’å¹¶ï¼Œä»¥ç±»ä¼¼äºŒå‰æ ‘çš„å½¢å¼å½’å¹¶æˆä¸€å †
+// ¶àÂ·¹é²¢º¯Êı
+void multi_merge(vector<vector<vector<long long>>> &thread_data_str, vector<vector<long long>> &merged_data) // ºËĞÄË¼Ïë£º½«¶àÏß³ÌÉú³ÉµÄ¶à¶ÑÊı¾İÍ¨¹ıÁ½Â·¹é²¢½øĞĞ¶àÏß³Ì¹é²¢£¬ÒÔÀàËÆ¶ş²æÊ÷µÄĞÎÊ½¹é²¢³ÉÒ»¶Ñ
 {
     auto merge_start = chrono::steady_clock::now();
     int thread_count = thread_data_str.size();
 
-    // é€’å½’å½’å¹¶
-    while (thread_data_str.size() > 1) // åˆ¤æ–­å †çš„æ•°é‡æ˜¯å¦å¤§äº1
+    // µİ¹é¹é²¢
+    while (thread_data_str.size() > 1) // ÅĞ¶Ï¶ÑµÄÊıÁ¿ÊÇ·ñ´óÓÚ1
     {
         vector<vector<vector<long long>>> new_temp_data;
 
-        // ä½¿ç”¨å¤šçº¿ç¨‹è¿›è¡Œå½’å¹¶
+        // Ê¹ÓÃ¶àÏß³Ì½øĞĞ¹é²¢
         vector<thread> merge_threads;
         for (int i = 0; i < thread_data_str.size(); i += 2)
         {
             if (i + 1 < thread_data_str.size())
             {
-                // åˆ›å»ºä¸€ä¸ªæ–°çº¿ç¨‹è¿›è¡Œå½’å¹¶
+                // ´´½¨Ò»¸öĞÂÏß³Ì½øĞĞ¹é²¢
                 merge_threads.emplace_back([i, &thread_data_str, &new_temp_data]()
                                            {
                     vector<vector<long long>> merged;
                     merge(thread_data_str[i], thread_data_str[i + 1], merged,i);
-                    // ä½¿ç”¨äº’æ–¥é”ä¿æŠ¤å…±äº«æ•°æ®
+                    // Ê¹ÓÃ»¥³âËø±£»¤¹²ÏíÊı¾İ
                     mutex_data.lock();
-                    new_temp_data.push_back(merged); mutex_data.unlock(); }); // å¤šçº¿ç¨‹è¿›è¡ŒäºŒè·¯å½’å¹¶ï¼Œè¿™é‡Œæ˜¯ä¸€ä¸ªlambdaå‡½æ•°ï¼ˆæ— å‡½æ•°åçš„éšå‡½æ•°ï¼‰
+                    new_temp_data.push_back(merged); mutex_data.unlock(); }); // ¶àÏß³Ì½øĞĞ¶şÂ·¹é²¢£¬ÕâÀïÊÇÒ»¸ölambdaº¯Êı£¨ÎŞº¯ÊıÃûµÄÒşº¯Êı£©
             }
             else
             {
-                new_temp_data.push_back(thread_data_str[i]); // æœ«å°¾çš„å¥‡æ•°å †ç›´æ¥ä¿ç•™è¿‡æ¥
+                new_temp_data.push_back(thread_data_str[i]); // Ä©Î²µÄÆæÊı¶ÑÖ±½Ó±£Áô¹ıÀ´
             }
         }
 
-        // ç­‰å¾…æ‰€æœ‰çº¿ç¨‹å®Œæˆå½’å¹¶
+        // µÈ´ıËùÓĞÏß³ÌÍê³É¹é²¢
         for (auto &thread : merge_threads)
         {
             thread.join();
         }
-        std::cout << "----------------------------------------------------------------------" << std::endl; // åˆ†éš”ç¬¦
+        std::cout << "----------------------------------------------------------------------" << std::endl; // ·Ö¸ô·û
 
         thread_data_str = new_temp_data;
     }
 
-    // æœ€åå‰©ä¸‹çš„æ•°æ®å³ä¸ºæœ€ç»ˆçš„å½’å¹¶ç»“æœ
+    // ×îºóÊ£ÏÂµÄÊı¾İ¼´Îª×îÖÕµÄ¹é²¢½á¹û
     merged_data.swap(thread_data_str[0]);
 
     auto merge_end = chrono::steady_clock::now();
     auto merge_duration = chrono::duration_cast<chrono::milliseconds>(merge_end - merge_start).count();
-    std::cout << "å½’å¹¶å®Œæˆè€—æ—¶: " << merge_duration << " æ¯«ç§’" << endl;
+    std::cout << "¹é²¢Íê³ÉºÄÊ±: " << merge_duration << " ºÁÃë" << endl;
 }
 
 int main(int argc, char *argv[])
 {
 
-    if (argc < 2) // è¯»å–åœ¨å‘½ä»¤æç¤ºè¡Œä¸­è¢«é™„åŠ ç»™ç¨‹åºçš„æ–‡æœ¬æ–‡ä»¶åœ°å€
+    if (argc < 2) // ¶ÁÈ¡ÔÚÃüÁîÌáÊ¾ĞĞÖĞ±»¸½¼Ó¸ø³ÌĞòµÄÎÄ±¾ÎÄ¼şµØÖ·
     {
-        std::cout << "è¯·æä¾›æ–‡ä»¶å" << std::endl;
-        return 1; // è¿”å›éé›¶å€¼è¡¨ç¤ºç¨‹åºå¼‚å¸¸é€€å‡º
+        std::cout << "ÇëÌá¹©ÎÄ¼şÃû" << std::endl;
+        return 1; // ·µ»Ø·ÇÁãÖµ±íÊ¾³ÌĞòÒì³£ÍË³ö
     }
 
     filename_READ = argv[1];
     // filename_READ = "DATA1G.txt";
-    std::cout << "æ–‡ä»¶å: " << filename_READ << std::endl;
+    std::cout << "ÎÄ¼şÃû: " << filename_READ << std::endl;
 
-    auto all_start = chrono::steady_clock::now();  // è¯»å–æ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
-    auto read_start = chrono::steady_clock::now(); // è¯»å–æ•°æ®é˜¶æ®µå¼€å§‹è®¡æ—¶
+    auto all_start = chrono::steady_clock::now();  // ¶ÁÈ¡Êı¾İ½×¶Î½áÊø¼ÆÊ±
+    auto read_start = chrono::steady_clock::now(); // ¶ÁÈ¡Êı¾İ½×¶Î¿ªÊ¼¼ÆÊ±
 
     std::ifstream file_read(filename_READ, ios::in);
     std::ofstream file_write(FILE_SEND_NAME, ios::out);
-    long long count; // ç”¨äºè®°å½•è¯»å–çš„è¡Œæ•°
+    long long count; // ÓÃÓÚ¼ÇÂ¼¶ÁÈ¡µÄĞĞÊı
     long long fileSize;
 
     if (file_read.is_open())
     {
-        // å°†æ–‡ä»¶æŒ‡é’ˆç§»åˆ°æ–‡ä»¶æœ«å°¾
+        // ½«ÎÄ¼şÖ¸ÕëÒÆµ½ÎÄ¼şÄ©Î²
         file_read.seekg(0, file_read.end);
 
-        fileSize = file_read.tellg(); // è·å–æ–‡ä»¶å¤§å°
-        count = fileSize / 16;        // é€šè¿‡è·å–æ–‡æœ¬æ€»å­—ç¬¦æ•°è®¡ç®—æ€»è¡Œæ•°
+        fileSize = file_read.tellg(); // »ñÈ¡ÎÄ¼ş´óĞ¡
+        count = fileSize / 16;        // Í¨¹ı»ñÈ¡ÎÄ±¾×Ü×Ö·ûÊı¼ÆËã×ÜĞĞÊı
 
-        std::cout << "æ–‡ä»¶å¤§å°ä¸ºï¼š" << (double)fileSize / 1024 / 1024 / 1024 << "GB" << std::endl;
-        std::cout << "æ–‡ä»¶è¡Œæ•°ä¸ºï¼š" << count << std::endl;
+        std::cout << "ÎÄ¼ş´óĞ¡Îª£º" << (double)fileSize / 1024 / 1024 / 1024 << "GB" << std::endl;
+        std::cout << "ÎÄ¼şĞĞÊıÎª£º" << count << std::endl;
 
-        // å…³é—­æ–‡ä»¶
+        // ¹Ø±ÕÎÄ¼ş
         file_read.close();
     }
     else
     {
-        std::cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶" << std::endl;
+        std::cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << std::endl;
         return 0;
     }
 
     if (!file_write.is_open())
     {
-        std::cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶" << std::endl;
+        std::cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << std::endl;
         return 0;
     }
 
-    // è®¡ç®—æ¯ä¸ªçº¿ç¨‹éœ€è¦è¯»å–çš„è¡Œæ•°
-    int thread_count = thread::hardware_concurrency(); // è·å–çº¿ç¨‹æ•°
-    long long lines_per_thread = count / thread_count; // è®¡ç®—å¹³å‡åˆ†é…è¯»å–æ•°é‡
+    // ¼ÆËãÃ¿¸öÏß³ÌĞèÒª¶ÁÈ¡µÄĞĞÊı
+    int thread_count = thread::hardware_concurrency(); // »ñÈ¡Ïß³ÌÊı
+    long long lines_per_thread = count / thread_count; // ¼ÆËãÆ½¾ù·ÖÅä¶ÁÈ¡ÊıÁ¿
 
-    thread_data_str.resize(thread_count); // æå‰åˆ›å»ºå¥½ç©ºé—´æ–¹ä¾¿åç»­ç›´æ¥å†™å…¥
-    thread_data_num.resize(thread_count); // æ³¨æ„åŒºåˆ†resizeå’Œreverseå“ˆï¼ä¸€ä¸ªæ˜¯ç›´æ¥å¡«å……ç©ºæ•°ç»„å…ƒç´ ï¼Œä¸€ä¸ªæ˜¯å•çº¯é¢„ç•™å†…å­˜ç©ºé—´
+    thread_data_str.resize(thread_count); // ÌáÇ°´´½¨ºÃ¿Õ¼ä·½±ãºóĞøÖ±½ÓĞ´Èë
+    thread_data_num.resize(thread_count); // ×¢ÒâÇø·ÖresizeºÍreverse¹ş£¡Ò»¸öÊÇÖ±½ÓÌî³ä¿ÕÊı×éÔªËØ£¬Ò»¸öÊÇµ¥´¿Ô¤ÁôÄÚ´æ¿Õ¼ä
 
-    // è¯»å–æ•°æ®é˜¶æ®µçš„å¤šçº¿ç¨‹å®ç°
+    // ¶ÁÈ¡Êı¾İ½×¶ÎµÄ¶àÏß³ÌÊµÏÖ
     vector<thread> read_threads;
     for (int i = 0; i < thread_count; i++)
     {
         long long start = i * lines_per_thread;
         long long end = (i == (thread_count - 1)) ? count : lines_per_thread * (i + 1);
 
-        read_threads.emplace_back(read_lines, start, end - start, ref(thread_data_str[i]), ref(thread_data_num[i])); // å¤šçº¿ç¨‹è¯»å…¥æ•°æ®
+        read_threads.emplace_back(read_lines, start, end - start, ref(thread_data_str[i]), ref(thread_data_num[i])); // ¶àÏß³Ì¶ÁÈëÊı¾İ
     }
 
-    while (true) // è¿™é‡Œæ˜¯åšé‚£ä¸ªè¿›åº¦æ¡ï¼Œå¦‚æœä¸éœ€è¦ï¼Œå¯ä»¥ç›´æ¥æ›¿æ¢ä¸ºææˆåªå‰©ä¸‹for (auto &t : read_threads){t.join();}
+    while (true) // ÕâÀïÊÇ×öÄÇ¸ö½ø¶ÈÌõ£¬Èç¹û²»ĞèÒª£¬¿ÉÒÔÖ±½ÓÌæ»»Îª¸ã³ÉÖ»Ê£ÏÂfor (auto &t : read_threads){t.join();}
     {
-        std::chrono::milliseconds delay(250); // å»¶æ—¶æ—¶é—´ä¸º0.25ç§’
+        std::chrono::milliseconds delay(250); // ÑÓÊ±Ê±¼äÎª0.25Ãë
 
         long long tmp_read_lines = 0;
         for (int i = 0; i < thread_count; i++)
@@ -270,37 +270,43 @@ int main(int argc, char *argv[])
             }
             break;
         }
-        std::this_thread::sleep_for(delay); // å»¶æ—¶0.25ç§’
+        std::this_thread::sleep_for(delay); // ÑÓÊ±0.25Ãë
     }
 
-    auto read_end = chrono::steady_clock::now(); // è¯»å–æ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto read_end = chrono::steady_clock::now(); // ¶ÁÈ¡Êı¾İ½×¶Î½áÊø¼ÆÊ±
     auto read_duration = chrono::duration_cast<chrono::milliseconds>(read_end - read_start).count();
-    cout << "è¯»å–æ•°æ®è€—æ—¶: " << read_duration << " æ¯«ç§’" << endl;
+    cout << "¶ÁÈ¡Êı¾İºÄÊ±: " << read_duration << " ºÁÃë" << endl;
     std::cout << "----------------------------------------------------------------------" << std::endl;
 
-    // æ’åºé˜¶æ®µçš„å¤šçº¿ç¨‹å®ç°
+    // ÅÅĞò½×¶ÎµÄ¶àÏß³ÌÊµÏÖ
     vector<thread> sort_threads;
     for (int i = 0; i < thread_count; i++)
     {
-        sort_threads.emplace_back(sort_data, i, ref(thread_data_str[i])); // å¤šçº¿ç¨‹å®Œæˆæ•°æ®æ’åº
+        sort_threads.emplace_back(sort_data, i, ref(thread_data_str[i])); // ¶àÏß³ÌÍê³ÉÊı¾İÅÅĞò
     }
 
     for (auto &t : sort_threads)
     {
-        t.join(); // ç­‰å¾…çº¿ç¨‹å®Œæˆ
+        t.join(); // µÈ´ıÏß³ÌÍê³É
     }
     std::cout << "----------------------------------------------------------------------" << std::endl;
 
-    // å½’å¹¶æ’åºé˜¶æ®µçš„å¤šçº¿ç¨‹å®ç°
+    // ¹é²¢ÅÅĞò½×¶ÎµÄ¶àÏß³ÌÊµÏÖ
     vector<vector<long long>> merged_data;
-    multi_merge(thread_data_str, merged_data); // æœ€åè¿è¡Œä¸€ä¸‹å°è£…å¥½çš„å¤šè·¯å½’å¹¶å‡½æ•°
+    multi_merge(thread_data_str, merged_data); // ×îºóÔËĞĞÒ»ÏÂ·â×°ºÃµÄ¶àÂ·¹é²¢º¯Êı
     std::cout << "----------------------------------------------------------------------" << std::endl;
 
-    auto all_end = chrono::steady_clock::now(); // è¯»å–æ•°æ®é˜¶æ®µç»“æŸè®¡æ—¶
+    auto all_end = chrono::steady_clock::now(); // ¶ÁÈ¡Êı¾İ½×¶Î½áÊø¼ÆÊ±
     auto all_duration = chrono::duration_cast<chrono::milliseconds>(all_end - all_start).count();
 
-    cout << "æ€»å…±å¤„ç†è€—æ—¶: " << all_duration << " æ¯«ç§’" << endl;
-    cout << "æ€»å…±å¤„ç†é€Ÿåº¦: " << (double)fileSize / 1024 / 1024 * 1000 / all_duration << " MB/s" << endl;
+    cout << "×Ü¹²´¦ÀíºÄÊ±: " << all_duration << " ºÁÃë" << endl;
+    cout << "×Ü¹²´¦ÀíËÙ¶È: " << (double)fileSize / 1024 / 1024 * 1000 / all_duration << " MB/s" << endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
 
+    for (int i = 0; i < NUM_STR_HIGH; i++)
+    {
+        std::cout << merged_data[i][0] << " ";
+    }
+    std::cout << std::endl;
     return 0;
 }

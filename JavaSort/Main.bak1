@@ -44,8 +44,9 @@ class Main {
     private static void readLines(long start, long rows, List<List<Long>> data, long[] num) throws IOException {
         BufferedReader fileRead = new BufferedReader(new FileReader(filename_READ));
         data.clear();
+
         for (int i = 0; i < NUM_STR_HIGH; i++) {
-            data.add(new ArrayList<>());
+            data.add(new ArrayList<>((int) rows / NUM_STR_HIGH));
         }
         String line;
         num[0] = 0;
@@ -80,7 +81,7 @@ class Main {
         for (int high = 0; high < NUM_STR_HIGH; high++) {
             List<Long> dataA = data1.get(high);
             List<Long> dataB = data2.get(high);
-            List<Long> merged_data = new ArrayList<>();
+            List<Long> merged_data = new ArrayList<>(NUM_STR_HIGH);
             int i1 = 0, i2 = 0;
             while (i1 < dataA.size() && i2 < dataB.size()) {
                 if (dataA.get(i1) < dataB.get(i2)) {
@@ -121,7 +122,7 @@ class Main {
                 if (i + 1 < newSize) {
                     final int index = i;
                     executor.execute(() -> {
-                        List<List<Long>> merged = new ArrayList<>();
+                        List<List<Long>> merged = new ArrayList<>(NUM_STR_HIGH);
                         merge(thread_data_str.get(index), thread_data_str.get(index + 1), merged, index);
                         synchronized (mutex_data) {
                             new_temp_data.add(merged);
@@ -200,7 +201,7 @@ class Main {
 
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -209,10 +210,10 @@ class Main {
             for (long[] num : thread_data_num) {
                 tmp_read_lines += num[0];
 
-                System.out.print(num[0]);
-                System.out.print(" ");
+                // System.out.print(num[0]);
+                // System.out.print(" ");
             }
-            System.out.println(tmp_read_lines);
+            // System.out.println(tmp_read_lines);
 
             updateProgressBar((int) ((double) tmp_read_lines * 10000 / count), 10000);
 
