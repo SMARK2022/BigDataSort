@@ -38,7 +38,7 @@ Str generateRandomString(int length)
 
 void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
 {
-    int batchSize = 805306368;
+    int batchSize = 10485760;
     int numBatches = (numLines + batchSize - 1) / batchSize;
 
     for (int batch = 0; batch < numBatches; batch++)
@@ -77,7 +77,7 @@ int main()
         return 1;
     }
 
-    int numLines = 67108864;
+    int numLines = 805306368;
     int stringLength = 15;
     int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
 

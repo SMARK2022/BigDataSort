@@ -185,6 +185,34 @@ void multi_merge(vector<vector<vector<long long>>> &thread_data_str, vector<vect
     std::cout << "归并完成耗时: " << merge_duration << " 毫秒" << endl;
 }
 
+void save_data(const vector<vector<long long>> &data_collection) // 保存数据的函数，咱们应该用不上，排完序直接放内存里面，然后通过网络直接传给下一台主机
+{
+    auto write_start = chrono::steady_clock::now();
+    ofstream file_write(FILE_SEND_NAME, ios::out);
+    if (!file_write.is_open())
+    {
+        cout << "无法打开文件" << endl;
+        return;
+    }
+    for (int high = 0; high < NUM_STR_HIGH; high++)
+    {
+
+        for (const auto &item : data_collection[high])
+        {
+            file_write << (high / 26) + 'a' << high % 26 + 'a' << endl;
+        }
+    }
+
+    file_write.close();
+    // 写出数据阶段的计时
+    auto write_end = chrono::steady_clock::now(); // 写出数据阶段结束计时
+                                                  // 计算每个阶段的耗时（毫秒为单位）
+    auto write_duration = chrono::duration_cast<chrono::milliseconds>(write_end - write_start).count();
+
+    // 输出每个阶段的耗时
+    cout << "写出数据耗时: " << write_duration << " 毫秒" << endl;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -296,6 +324,11 @@ int main(int argc, char *argv[])
     multi_merge(thread_data_str, merged_data); // 最后运行一下封装好的多路归并函数
     std::cout << "----------------------------------------------------------------------" << std::endl;
 
+    // 创建新的线程保存数据
+    // thread save_thread(save_data, ref(merged_data));
+
+    // // 等待保存数据线程结束
+    // save_thread.join();
     auto all_end = chrono::steady_clock::now(); // 读取数据阶段结束计时
     auto all_duration = chrono::duration_cast<chrono::milliseconds>(all_end - all_start).count();
 

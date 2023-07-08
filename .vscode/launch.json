@@ -3,6 +3,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "JavaSort.Main",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "Main",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
             "name": "SortStrings",
             "request": "launch",
             "mainClass": "SortStrings",
