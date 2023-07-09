@@ -30,13 +30,17 @@ class LongArray {
   public void push(long value) {
     if (size == arr.length) {
       // 扩充数组大小
-      arr = Arrays.copyOf(arr, arr.length * 2);
+      arr = Arrays.copyOf(arr, (int) arr.length * 3 / 2);
     }
     arr[size++] = value;
   }
 
   public int size() {
     return size;
+  }
+
+  public void shrink() {
+    arr = Arrays.copyOf(arr, size);
   }
 
   public long get(int index) {
@@ -170,6 +174,9 @@ class Main {
       data.get((line.charAt(0) - 'a') * 26 + line.charAt(1) - 'a').push(tmp_LowStr);
       num[0]++;
     }
+    for (int i = 0; i < NUM_STR_HIGH; i++) {
+      data.get(i).shrink();
+    }
     fileRead.close();
   }
 
@@ -201,7 +208,7 @@ class Main {
       data2.set(high, null);
 
       int i1 = 0, i2 = 0, sizeA = dataA.size(), sizeB = dataB.size();
-      merged_data = new LongArray(dataA.size());
+      merged_data = new LongArray(sizeA + sizeB);
       while (i1 < sizeA && i2 < sizeB) {
         if (dataA.get(i1) < dataB.get(i2)) {
           merged_data.push(dataA.get(i1));

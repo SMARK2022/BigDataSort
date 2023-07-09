@@ -3,6 +3,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "TCPSender",
+            "request": "launch",
+            "mainClass": "TCPSender",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "TCPReceiver",
+            "request": "launch",
+            "mainClass": "TCPReceiver",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "UDPSender",
+            "request": "launch",
+            "mainClass": "UDPSender",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
             "name": "UDPExample",
             "request": "launch",
             "mainClass": "UDPExample",
