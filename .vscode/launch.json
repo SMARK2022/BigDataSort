@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UDPExample",
+            "request": "launch",
+            "mainClass": "UDPExample",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
             "name": "Main",
             "request": "launch",
             "mainClass": "JavaSort.Main",

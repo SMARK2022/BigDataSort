@@ -20,17 +20,14 @@ class LongArray {
   }
 
   public LongArray(int capacity) {
-    if (capacity == 0)
-      arr = new long[4];
-    else
-      arr = new long[capacity];
+    arr = new long[capacity];
     size = 0;
   }
 
   public void push(long value) {
     if (size == arr.length) {
       // 扩充数组大小
-      arr = Arrays.copyOf(arr, arr.length * 2);
+      arr = Arrays.copyOf(arr, arr.length * 3 / 2);
     }
     arr[size++] = value;
   }
@@ -50,65 +47,6 @@ class LongArray {
   public void sort() {
     Arrays.sort(arr, 0, size);
   }
-
-  // 将LongArray转换为字节数组
-  public byte[] ExporttoBytes() {
-    int length = size * 8; // 每个long类型占8个字节
-    byte[] bytes = new byte[length];
-    for (int i = 0; i < size; i++) {
-      long value = arr[i];
-      for (int j = 0; j < 8; j++) {
-        bytes[i * 8 + j] = (byte) (value >>> (56 - j * 8));
-      }
-    }
-    return bytes;
-  }
-
-  // 将字节数组转换为LongArray
-  public static LongArray LoadfromBytes(byte[] bytes) {
-    int size = bytes.length / 8;
-    LongArray longArray = new LongArray(size);
-    for (int i = 0; i < size; i++) {
-      long value = 0;
-      for (int j = 0; j < 8; j++) {
-        value |= (long) (bytes[i * 8 + j] & 0xFF) << (56 - j * 8);
-      }
-      longArray.push(value);
-    }
-    return longArray;
-  }
-
-  // 多个LongArray合并成一个LongArray
-  public static LongArray merge(List<LongArray> arrays) {
-    int totalSize = 0;
-    for (LongArray array : arrays) {
-      totalSize += array.size();
-    }
-    LongArray mergedArray = new LongArray(totalSize);
-    for (LongArray array : arrays) {
-      for (int i = 0; i < array.size(); i++) {
-        mergedArray.push(array.get(i));
-      }
-    }
-    return mergedArray;
-  }
-
-  // 将一个LongArray切分成多个LongArray
-  public static List<LongArray> split(LongArray array, int chunkSize) {
-    List<LongArray> splitArrays = new ArrayList<>();
-    int size = array.size();
-    int startIndex = 0;
-    while (startIndex < size) {
-      int endIndex = Math.min(startIndex + chunkSize, size);
-      LongArray splitArray = new LongArray(endIndex - startIndex);
-      for (int i = startIndex; i < endIndex; i++) {
-        splitArray.push(array.get(i));
-      }
-      splitArrays.add(splitArray);
-      startIndex = endIndex;
-    }
-    return splitArrays;
-  }
 }
 
 class Main {
@@ -117,8 +55,6 @@ class Main {
   private static final int NUM_STR_HIGH = 676;
 
   private static String filename_READ;
-  private static long fileSize;
-  private static long count;
 
   private static final Object mutex_data = new Object();
   private static final Object mutex_display = new Object();
@@ -153,9 +89,10 @@ class Main {
       long[] num) throws IOException {
 
     BufferedReader fileRead = new BufferedReader(new FileReader(filename_READ));
+    data = new ArrayList<LongArray>(NUM_STR_HIGH);
 
     for (int i = 0; i < NUM_STR_HIGH; i++) {
-      data.add(new LongArray((int) (4 + rows / NUM_STR_HIGH / 2)));
+      data.add(new LongArray((int) rows / NUM_STR_HIGH / 2));
     }
     String line;
     long tmp_LowStr = 0;
@@ -230,10 +167,62 @@ class Main {
 
   }
 
-  private static void ReadFile() {
+  private static void multiMerge() {
+    long merge_start = System.currentTimeMillis();
 
+    while (thread_data_str.size() > 1) {
+      List<List<LongArray>> new_temp_data = new ArrayList<>();
+
+      int newSize = thread_data_str.size();
+      ExecutorService executor = Executors.newFixedThreadPool(newSize / 2);
+
+      for (int i = 0; i < newSize; i += 2) {
+        if (i + 1 < newSize) {
+          final int index = i;
+          executor.execute(() -> {
+            List<LongArray> merged = new ArrayList<LongArray>(NUM_STR_HIGH);
+            merge(thread_data_str.get(index), thread_data_str.get(index + 1), merged, index);
+            synchronized (mutex_data) {
+              new_temp_data.add(merged);
+            }
+          });
+        } else {
+          new_temp_data.add(thread_data_str.get(i));
+        }
+      }
+
+      executor.shutdown();
+
+      try {
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      System.out.println(
+          "----------------------------------------------------------------------");
+      thread_data_str = new_temp_data;
+
+    }
+
+    long merge_end = System.currentTimeMillis();
+    long merge_duration = merge_end - merge_start;
+    System.out.println("归并完成耗时: " + merge_duration + " 毫秒");
+  }
+
+  public static void main(String[] args) {
+    if (args.length < 1) {
+      System.out.println("请提供文件名");
+      System.exit(1);
+    }
+
+    filename_READ = args[0];
+    System.out.println("文件名: " + filename_READ);
+
+    long all_start = System.currentTimeMillis();
     long read_start = System.currentTimeMillis();
     List<long[]> thread_data_num;
+    long count = 0;
+    long fileSize = 0;
     File file_read = new File(filename_READ);
     if (file_read.exists()) {
       fileSize = file_read.length();
@@ -301,12 +290,11 @@ class Main {
     long read_end = System.currentTimeMillis();
     long read_duration = read_end - read_start;
     System.out.println("读取数据耗时: " + read_duration + " 毫秒");
+    System.out.println(
+        "----------------------------------------------------------------------");
 
-  }
-
-  private static void SortBlocks() {
     List<Thread> sort_threads = new ArrayList<>();
-    for (int i = 0; i < thread_data_str.size(); i++) {
+    for (int i = 0; i < numProcessors; i++) {
       final int index = i;
       Thread thread = new Thread(() -> sortData(index, thread_data_str.get(index)));
       sort_threads.add(thread);
@@ -320,71 +308,10 @@ class Main {
         e.printStackTrace();
       }
     }
-  }
-
-  private static void MultiMerge() {
-    long merge_start = System.currentTimeMillis();
-
-    while (thread_data_str.size() > 1) {
-      List<List<LongArray>> new_temp_data = new ArrayList<>();
-
-      int newSize = thread_data_str.size();
-      ExecutorService executor = Executors.newFixedThreadPool(newSize / 2);
-
-      for (int i = 0; i < newSize; i += 2) {
-        if (i + 1 < newSize) {
-          final int index = i;
-          executor.execute(() -> {
-            List<LongArray> merged = new ArrayList<LongArray>(NUM_STR_HIGH);
-            merge(thread_data_str.get(index), thread_data_str.get(index + 1), merged, index);
-            synchronized (mutex_data) {
-              new_temp_data.add(merged);
-            }
-          });
-        } else {
-          new_temp_data.add(thread_data_str.get(i));
-        }
-      }
-
-      executor.shutdown();
-
-      try {
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      System.out.println(
-          "----------------------------------------------------------------------");
-      thread_data_str = new_temp_data;
-
-    }
-
-    long merge_end = System.currentTimeMillis();
-    long merge_duration = merge_end - merge_start;
-    System.out.println("归并完成耗时: " + merge_duration + " 毫秒");
-  }
-
-  public static void main(String[] args) {
-    if (args.length < 1) {
-      System.out.println("请提供文件名");
-      System.exit(1);
-    }
-
-    // filename_READ = "F:\\Project\\BigDataSort\\data01.txt";
-    filename_READ = args[0];
-
-    System.out.println("文件名: " + filename_READ);
-
-    long all_start = System.currentTimeMillis();
-
-    ReadFile();
-    System.out.println(
-        "----------------------------------------------------------------------");
-    SortBlocks();
     System.out.println(
         "----------------------------------------------------------------------");
 
-    MultiMerge();
+    multiMerge();
     System.out.println(
         "----------------------------------------------------------------------");
 

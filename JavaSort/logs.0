@@ -1,0 +1,94 @@
+[0.012s][info][gc] Using Parallel
+[1.037s][info][gc] GC(0) Pause Young (Allocation Failure) 4096M->2947M(15701M) 539.750ms
+[2.985s][info][gc] GC(1) Pause Young (Allocation Failure) 7043M->6146M(19797M) 664.054ms
+[13.526s][info][gc] GC(2) Pause Young (Allocation Failure) 14338M->6667M(19797M) 249.810ms
+[18.463s][info][gc] GC(3) Pause Young (Allocation Failure) 14859M->7630M(21163M) 382.770ms
+[23.898s][info][gc] GC(4) Pause Young (Allocation Failure) 17188M->8547M(21163M) 446.893ms
+[25.115s][info][gc] GC(5) Pause Full (Ergonomics) 8547M->7010M(19807M) 1216.449ms
+[27.083s][info][gc] GC(6) Pause Young (Allocation Failure) 10652M->8435M(22765M) 218.312ms
+[28.818s][info][gc] GC(7) Pause Young (Allocation Failure) 12076M->8448M(22765M) 225.158ms
+[30.405s][info][gc] GC(8) Pause Young (Allocation Failure) 12089M->9681M(22765M) 402.641ms
+[32.352s][info][gc] GC(9) Pause Young (Allocation Failure) 13323M->10296M(22765M) 567.136ms
+[34.127s][info][gc] GC(10) Pause Young (Allocation Failure) 13938M->10827M(22765M) 517.017ms
+[35.723s][info][gc] GC(11) Pause Young (Allocation Failure) 14468M->11453M(22765M) 420.946ms
+[37.171s][info][gc] GC(12) Pause Young (Allocation Failure) 15094M->12422M(22765M) 338.954ms
+[38.643s][info][gc] GC(13) Pause Young (Allocation Failure) 16063M->13100M(22765M) 383.921ms
+[39.997s][info][gc] GC(14) Pause Young (Allocation Failure) 16742M->14198M(20222M) 352.238ms
+[41.678s][info][gc] GC(15) Pause Full (Ergonomics) 14198M->9406M(25037M) 1680.531ms
+[42.809s][info][gc] GC(16) Pause Young (Allocation Failure) 13048M->9478M(25037M) 22.232ms
+[44.037s][info][gc] GC(17) Pause Young (Allocation Failure) 13120M->10841M(24839M) 229.472ms
+[45.446s][info][gc] GC(18) Pause Young (Allocation Failure) 14648M->11249M(25021M) 274.099ms
+[46.682s][info][gc] GC(19) Pause Young (Allocation Failure) 15055M->11997M(25124M) 171.496ms
+[48.117s][info][gc] GC(20) Pause Young (Allocation Failure) 16242M->12722M(25292M) 229.004ms
+[49.520s][info][gc] GC(21) Pause Young (Allocation Failure) 16968M->13736M(25195M) 285.558ms
+[51.122s][info][gc] GC(22) Pause Young (Allocation Failure) 18393M->14138M(25413M) 274.867ms
+[52.630s][info][gc] GC(23) Pause Young (Allocation Failure) 18795M->15177M(25470M) 280.133ms
+[54.483s][info][gc] GC(24) Pause Young (Allocation Failure) 20347M->16616M(25698M) 528.769ms
+[56.871s][info][gc] GC(25) Pause Young (Allocation Failure) 21786M->17098M(25978M) 1005.836ms
+[59.683s][info][gc] GC(26) Pause Full (Ergonomics) 17098M->11970M(29239M) 2811.487ms
+[61.490s][info][gc] GC(27) Pause Young (Allocation Failure) 17563M->13400M(29341M) 210.702ms
+[63.577s][info][gc] GC(28) Pause Young (Allocation Failure) 19117M->14807M(29351M) 366.260ms
+[65.811s][info][gc] GC(29) Pause Young (Allocation Failure) 20523M->15782M(29126M) 363.273ms
+[69.481s][info][gc] GC(30) Pause Young (Allocation Failure) 21503M->16645M(29241M) 260.283ms
+[79.520s][info][gc] GC(31) Pause Young (Allocation Failure) 22364M->19006M(28875M) 541.019ms
+[81.979s][info][gc] GC(32) Pause Young (Allocation Failure) 24377M->21361M(28790M) 1101.307ms
+[84.447s][info][gc] GC(33) Pause Full (Ergonomics) 21361M->14700M(29737M) 2468.311ms
+[85.966s][info][gc] GC(34) Pause Young (Allocation Failure) 19560M->16838M(28845M) 262.331ms
+[87.780s][info][gc] GC(35) Pause Young (Allocation Failure) 21698M->18953M(29462M) 467.365ms
+[89.533s][info][gc] GC(36) Pause Young (Allocation Failure) 23425M->20900M(29543M) 529.774ms
+[92.272s][info][gc] GC(37) Pause Full (Ergonomics) 20900M->15950M(29533M) 2739.204ms
+[93.756s][info][gc] GC(38) Pause Young (Allocation Failure) 20431M->17919M(29543M) 224.423ms
+[95.457s][info][gc] GC(39) Pause Young (Allocation Failure) 22400M->19866M(29503M) 474.607ms
+[108.376s][info][gc] GC(40) Pause Young (Allocation Failure) 24374M->21827M(29524M) 11706.102ms
+[111.295s][info][gc] GC(41) Pause Full (Ergonomics) 21827M->17154M(29591M) 2917.930ms
+[111.680s][info][gc] GC(42) Pause Young (System.gc()) 18253M->17638M(26933M) 75.150ms
+[114.316s][info][gc] GC(43) Pause Full (System.gc()) 17638M->17232M(26933M) 2635.604ms
+[115.911s][info][gc] GC(44) Pause Young (Allocation Failure) 21834M->19207M(29579M) 242.546ms
+[117.612s][info][gc] GC(45) Pause Young (Allocation Failure) 23741M->21145M(28340M) 467.836ms
+[120.559s][info][gc] GC(46) Pause Full (Ergonomics) 21145M->18000M(29542M) 2946.182ms
+[122.058s][info][gc] GC(47) Pause Young (Allocation Failure) 22532M->19954M(29542M) 256.129ms
+[123.749s][info][gc] GC(48) Pause Young (Allocation Failure) 24488M->21877M(29549M) 465.645ms
+[126.997s][info][gc] GC(49) Pause Full (Ergonomics) 21877M->18765M(29560M) 3247.551ms
+[128.528s][info][gc] GC(50) Pause Young (Allocation Failure) 23398M->20758M(29630M) 253.474ms
+[132.262s][info][gc] GC(51) Pause Young (Allocation Failure) 25515M->22764M(29657M) 2493.625ms
+[135.314s][info][gc] GC(52) Pause Full (Ergonomics) 22764M->19519M(29059M) 3052.782ms
+[139.779s][info][gc] GC(53) Pause Full (Ergonomics) 23621M->19842M(29358M) 3196.108ms
+[144.419s][info][gc] GC(54) Pause Full (Ergonomics) 23943M->20174M(29358M) 3372.518ms
+[156.681s][info][gc] GC(55) Pause Full (Ergonomics) 24277M->20509M(29358M) 11023.788ms
+[163.288s][info][gc] GC(56) Pause Full (Ergonomics) 24609M->20850M(29358M) 5527.921ms
+[168.128s][info][gc] GC(57) Pause Full (Ergonomics) 24950M->21188M(29358M) 3751.334ms
+[172.344s][info][gc] GC(58) Pause Full (System.gc()) 23363M->21342M(29358M) 3608.100ms
+[177.249s][info][gc] GC(59) Pause Full (Ergonomics) 25436M->21721M(29358M) 3672.142ms
+[182.208s][info][gc] GC(60) Pause Full (Ergonomics) 25818M->22083M(29358M) 3804.281ms
+[186.892s][info][gc] GC(61) Pause Full (Ergonomics) 25936M->22402M(29358M) 3587.244ms
+[191.497s][info][gc] GC(62) Pause Full (Ergonomics) 25924M->22742M(29358M) 3497.837ms
+[196.108s][info][gc] GC(63) Pause Full (Ergonomics) 25946M->23042M(29358M) 3731.190ms
+[200.611s][info][gc] GC(64) Pause Full (Ergonomics) 25922M->23295M(29358M) 3690.076ms
+[205.092s][info][gc] GC(65) Pause Full (Ergonomics) 25930M->23536M(29358M) 3569.653ms
+[209.728s][info][gc] GC(66) Pause Full (Ergonomics) 25929M->23740M(29358M) 3767.629ms
+[214.430s][info][gc] GC(67) Pause Full (Ergonomics) 25936M->23959M(29358M) 3924.398ms
+[218.678s][info][gc] GC(68) Pause Full (Ergonomics) 25922M->24137M(29358M) 3652.734ms
+[222.922s][info][gc] GC(69) Pause Full (Ergonomics) 25927M->24319M(29358M) 3719.933ms
+[227.176s][info][gc] GC(70) Pause Full (Ergonomics) 25921M->24472M(29358M) 3765.196ms
+[231.328s][info][gc] GC(71) Pause Full (Ergonomics) 25920M->24604M(29358M) 3713.318ms
+[235.642s][info][gc] GC(72) Pause Full (Ergonomics) 25935M->24743M(29358M) 3834.397ms
+[239.972s][info][gc] GC(73) Pause Full (Ergonomics) 25913M->24844M(29358M) 3947.037ms
+[244.314s][info][gc] GC(74) Pause Full (Ergonomics) 25931M->24951M(29358M) 3981.663ms
+[248.767s][info][gc] GC(75) Pause Full (Ergonomics) 25931M->25082M(29358M) 4082.597ms
+[253.369s][info][gc] GC(76) Pause Full (Ergonomics) 25923M->25144M(29358M) 4348.252ms
+[257.995s][info][gc] GC(77) Pause Full (Ergonomics) 25935M->25235M(29358M) 4342.997ms
+[262.982s][info][gc] GC(78) Pause Full (Ergonomics) 25936M->25312M(29358M) 4275.307ms
+[267.198s][info][gc] GC(79) Pause Full (Ergonomics) 25934M->25358M(29358M) 3993.878ms
+[271.472s][info][gc] GC(80) Pause Full (Ergonomics) 25937M->25404M(29358M) 4058.370ms
+[275.740s][info][gc] GC(81) Pause Full (Ergonomics) 25934M->25453M(29358M) 3996.231ms
+[280.147s][info][gc] GC(82) Pause Full (Ergonomics) 25938M->25491M(29358M) 4241.220ms
+[284.500s][info][gc] GC(83) Pause Full (Ergonomics) 25939M->25544M(29358M) 4227.989ms
+[288.571s][info][gc] GC(84) Pause Full (Ergonomics) 25928M->25580M(29358M) 3909.204ms
+[293.095s][info][gc] GC(85) Pause Full (Ergonomics) 25925M->25624M(29358M) 4329.057ms
+[297.353s][info][gc] GC(86) Pause Full (Ergonomics) 25922M->25628M(29358M) 4150.472ms
+[301.607s][info][gc] GC(87) Pause Full (Ergonomics) 25940M->25658M(29358M) 4158.442ms
+[306.093s][info][gc] GC(88) Pause Full (Ergonomics) 25918M->25702M(29358M) 4374.516ms
+[310.779s][info][gc] GC(89) Pause Full (Ergonomics) 25936M->25699M(29358M) 4603.861ms
+[314.996s][info][gc] GC(90) Pause Full (Ergonomics) 25939M->25742M(29358M) 4129.962ms
+[319.241s][info][gc] GC(91) Pause Full (Ergonomics) 25934M->25759M(29358M) 4179.654ms
+[323.322s][info][gc] GC(92) Pause Full (Ergonomics) 25946M->25768M(29358M) 3983.654ms

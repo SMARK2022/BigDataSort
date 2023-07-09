@@ -77,7 +77,7 @@ int main()
         return 1;
     }
 
-    int numLines = 805306368;
+    int numLines = 1610612736;
     int stringLength = 15;
     int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
 
