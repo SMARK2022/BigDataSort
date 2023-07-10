@@ -71,13 +71,19 @@ void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
 int main()
 {
     srand(time(0));
-    if (!(outputFile = fopen("DATA1G.txt", "wb")))
+    std::string filename;
+    double N_GB;
+    std::cout << "FileName:";
+    std::cin >> filename;
+    std::cout << "N_GB:";
+    std::cin >> N_GB;
+    if (!(outputFile = fopen(filename.c_str(), "wb")))
     {
         std::cerr << "Failed to open file." << std::endl;
         return 1;
     }
 
-    int numLines = 1610612736;
+    long long numLines = N_GB * 1024 * 1024 * 1024 / 16;
     int stringLength = 15;
     int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
 
