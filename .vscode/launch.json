@@ -3,6 +3,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MainClient",
+            "request": "launch",
+            "mainClass": "MainClient",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "MainServer",
+            "request": "launch",
+            "mainClass": "MainServer",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
+            "name": "test",
+            "request": "launch",
+            "mainClass": "test",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
             "name": "TCPSender",
             "request": "launch",
             "mainClass": "TCPSender",

@@ -60,5 +60,6 @@
         "thread": "cpp",
         "iomanip": "cpp",
         "sstream": "cpp"
-    }
+    },
+    "java.debug.settings.onBuildFailureProceed": true
 }
