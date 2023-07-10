@@ -1,7 +1,12 @@
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -369,6 +374,71 @@ class Main {
     long merge_end = System.currentTimeMillis();
     long merge_duration = merge_end - merge_start;
     System.out.println("归并完成耗时: " + merge_duration + " 毫秒");
+  }
+
+  private static void SendData(String serverIP, int serverPort) {
+    int dataSize = 1024; // 每次发送的数据多少（单位为字节）
+
+    try {
+      Socket socket = new Socket(serverIP, serverPort);
+      DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+      DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+
+      // 进行握手
+      outputStream.writeUTF("握手消息");
+      // long startTime = System.currentTimeMillis();
+
+      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
+        List<LongArray> BucketChunks = LongArray.split(thread_data_str.get(0).get(i_buck), dataSize);
+        // 开始计时测试
+        for (int i = 0; i < BucketChunks.size(); i++) {
+          byte[] sendData = BucketChunks.get(i).ExporttoBytes();
+
+          // 发送前的信息
+          int ChunkSize = dataSize; // 数据块的大小
+          int BucketNumber = i_buck; // 归并段编号
+          int number = i; // 编号
+
+          // 将发送前的信息合并成一个字节数组
+          ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+          DataOutputStream dataStream = new DataOutputStream(byteStream);
+          dataStream.writeInt(ChunkSize);
+          dataStream.writeInt(BucketNumber);
+          dataStream.writeInt(number);
+          dataStream.write(sendData);
+          byte[] sendBytes = byteStream.toByteArray();
+
+          outputStream.write(sendBytes);
+
+          // 进行握手
+          String handshakeMsg = inputStream.readUTF();
+          while (handshakeMsg != "c") {
+            try {
+              // 延时1秒
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            handshakeMsg = inputStream.readUTF();
+          }
+        }
+      }
+
+      // long endTime = System.currentTimeMillis();
+
+      // 输出测试结果
+      // long elapsedTime = endTime - startTime;
+      // double speed = (double) dataSize * / elapsedTime / 1024 / 1024;
+      // System.out.println("发送端：数据发送完毕，总耗时：" + elapsedTime + "ms");
+      // System.out.println("发送速度：" + speed + "MB/s");
+
+      outputStream.close();
+      socket.close();
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) {
