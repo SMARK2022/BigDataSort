@@ -128,8 +128,6 @@ class MainServer {
   private static final int BAR_WIDTH = 70;
   private static final int NUM_STR_HIGH = 676;
 
-  private static String filename_READ;
-  private static long fileSize;
   private static int Bucket_Merged = -1;
   private static int Bucket_Dealt = -1;
   private static boolean StartProcess = false;
@@ -313,8 +311,15 @@ class MainServer {
   }
 
   private static void MultiMergeBucket() {
-    long merge_start = System.currentTimeMillis();
     int id_bucket;
+    while (!StartProcess) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    long merge_start = System.currentTimeMillis();
     for (id_bucket = 0; id_bucket < NUM_STR_HIGH; id_bucket++) {
       while (true) {
         boolean run = false;
@@ -369,68 +374,80 @@ class MainServer {
   }
 
   private static void SendData(String serverIP, int serverPort, int ChunkSize) {
+    boolean connected = false;
+    System.out.println("发送端：目标主机 " + serverIP);
+    System.out.println("发送端：目标端口 " + serverPort);
+    while (!connected) {
+      try {
+        Socket socket = new Socket(serverIP, serverPort);
+        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 
-    try {
-      Socket socket = new Socket(serverIP, serverPort);
-      DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-      DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+        // 进行握手
+        outputStream.writeUTF("HandShake!");
+        // long startTime = System.currentTimeMillis();
 
-      // 进行握手
-      outputStream.writeUTF("HandShake!");
-      // long startTime = System.currentTimeMillis();
+        for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
 
-      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
-
-        while (Bucket_Merged < i_buck) {
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
+          while (Bucket_Merged < i_buck) {
+            try {
+              Thread.sleep(1);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
           }
+
+          List<LongArray> BucketChunks = LongArray.split(Client_data_str.get(i_buck).get(0), ChunkSize);
+          // 开始计时测试
+          for (int i = 0; i < BucketChunks.size(); i++) {
+            byte[] sendData = BucketChunks.get(i).ExporttoBytes();
+
+            // 发送前的信息
+            int BucketNumber = i_buck; // 归并段编号
+            int index = i; // 编号
+
+            // 将发送前的信息合并成一个字节数组
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(byteStream);
+            dataStream.writeInt(ChunkSize);
+            dataStream.writeInt(BucketNumber);
+            dataStream.writeInt(index);
+            dataStream.write(sendData);
+            byte[] sendBytes = byteStream.toByteArray();
+
+            outputStream.write(sendBytes);
+
+            // 进行握手
+            String handshakeMsg = inputStream.readUTF();
+            while (handshakeMsg != "c") {
+              handshakeMsg = inputStream.readUTF();
+            }
+          }
+          Bucket_Dealt++;
+          Client_data_str.get(i_buck).set(0, null);
+
         }
 
-        List<LongArray> BucketChunks = LongArray.split(Client_data_str.get(i_buck).get(0), ChunkSize);
-        // 开始计时测试
-        for (int i = 0; i < BucketChunks.size(); i++) {
-          byte[] sendData = BucketChunks.get(i).ExporttoBytes();
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(byteStream);
+        dataStream.writeInt(-1);
+        byte[] sendBytes = byteStream.toByteArray();
+        outputStream.write(sendBytes);
+        outputStream.close();
+        socket.close();
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        // 输出连接错误信息
+        System.out.println("连接错误：" + e.getMessage());
 
-          // 发送前的信息
-          int BucketNumber = i_buck; // 归并段编号
-          int index = i; // 编号
-
-          // 将发送前的信息合并成一个字节数组
-          ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-          DataOutputStream dataStream = new DataOutputStream(byteStream);
-          dataStream.writeInt(ChunkSize);
-          dataStream.writeInt(BucketNumber);
-          dataStream.writeInt(index);
-          dataStream.write(sendData);
-          byte[] sendBytes = byteStream.toByteArray();
-
-          outputStream.write(sendBytes);
-
-          // 进行握手
-          String handshakeMsg = inputStream.readUTF();
-          while (handshakeMsg != "c") {
-            handshakeMsg = inputStream.readUTF();
-          }
+        try {
+          // 等待 1 秒后重试连接
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+          ex.printStackTrace();
         }
-        Bucket_Dealt++;
-        Client_data_str.get(i_buck).set(0, null);
-
       }
-
-      ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-      DataOutputStream dataStream = new DataOutputStream(byteStream);
-      dataStream.writeInt(-1);
-      byte[] sendBytes = byteStream.toByteArray();
-      outputStream.write(sendBytes);
-      outputStream.close();
-      socket.close();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
@@ -447,7 +464,13 @@ class MainServer {
   }
 
   private static void SaveData(String fileName, int start, int gap) {
-
+    while (!StartProcess) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
     try {
       long Outputindex = start;
       long Sumbuckets = 0;

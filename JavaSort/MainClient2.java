@@ -400,78 +400,87 @@ class MainClient2 {
   }
 
   private static void SendData(String serverIP, int serverPort, int ChunkSize) {
+    boolean connected = false;
+    while (!connected) {
+      try {
+        System.out.println("发送端：目标主机 " + serverIP);
+        System.out.println("发送端：目标端口 " + serverPort);
+        Socket socket = new Socket(serverIP, serverPort);
+        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 
-    try {
-      System.out.println("发送端：目标主机 " + serverIP);
-      System.out.println("发送端：目标端口 " + serverPort);
-      Socket socket = new Socket(serverIP, serverPort);
-      DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-      DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+        // 进行握手
+        outputStream.writeUTF("HandShake!");
 
-      // 进行握手
-      outputStream.writeUTF("HandShake!");
+        // 进行握手
+        String handshakeMsg = inputStream.readUTF();
+        System.out.println("发送端：握手消息：" + handshakeMsg);
+        // long startTime = System.currentTimeMillis();
 
-      // 进行握手
-      String handshakeMsg = inputStream.readUTF();
-      System.out.println("发送端：握手消息：" + handshakeMsg);
-      // long startTime = System.currentTimeMillis();
+        // 连接成功，设置 connected 为 true，跳出循环
+        connected = true;
 
-      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
-        List<LongArray> BucketChunks = LongArray.split(thread_data_str.get(0).get(i_buck), ChunkSize);
-        // 开始计时测试
-        for (int i = 0; i < BucketChunks.size(); i++) {
+        for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
+          List<LongArray> BucketChunks = LongArray.split(thread_data_str.get(0).get(i_buck), ChunkSize);
+          // 开始计时测试
+          for (int i = 0; i < BucketChunks.size(); i++) {
 
-          // System.out.println("发送端：发送一个Chunk");
-          byte[] sendData = BucketChunks.get(i).ExporttoBytes();
+            // System.out.println("发送端：发送一个Chunk");
+            byte[] sendData = BucketChunks.get(i).ExporttoBytes();
 
-          // 发送前的信息
-          int chunkSize = BucketChunks.get(i).size();
-          int BucketNumber = i_buck; // 归并段编号
-          int index = i; // 编号
+            // 发送前的信息
+            int chunkSize = BucketChunks.get(i).size();
+            int BucketNumber = i_buck; // 归并段编号
+            int index = i; // 编号
 
-          // 将发送前的信息合并成一个字节数组
-          ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-          DataOutputStream dataStream = new DataOutputStream(byteStream);
-          dataStream.writeInt(chunkSize);
-          dataStream.writeInt(BucketNumber);
-          dataStream.writeInt(index);
-          dataStream.write(sendData);
-          byte[] sendBytes = byteStream.toByteArray();
-          if (sendBytes.length != 12 + 8 * chunkSize) {
-            System.out.println(sendBytes);
-          }
-          outputStream.write(sendBytes);
-
-          // 进行握手
-          handshakeMsg = inputStream.readUTF();
-          // System.out.println(handshakeMsg);
-          while (!handshakeMsg.equals("c")) {
-            try {
-              Thread.sleep(1);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
+            // 将发送前的信息合并成一个字节数组
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(byteStream);
+            dataStream.writeInt(chunkSize);
+            dataStream.writeInt(BucketNumber);
+            dataStream.writeInt(index);
+            dataStream.write(sendData);
+            byte[] sendBytes = byteStream.toByteArray();
+            if (sendBytes.length != 12 + 8 * chunkSize) {
+              System.out.println(sendBytes);
             }
-            // System.out.println("-");
+            outputStream.write(sendBytes);
+
+            // 进行握手
             handshakeMsg = inputStream.readUTF();
+            // System.out.println(handshakeMsg);
+            while (!handshakeMsg.equals("c")) {
+              // System.out.println("-");
+              handshakeMsg = inputStream.readUTF();
+              continue;
+            }
+
           }
-
+          updateProgressBar(i_buck + 1, NUM_STR_HIGH);
         }
-        updateProgressBar(i_buck + 1, NUM_STR_HIGH);
-      }
-      ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-      DataOutputStream dataStream = new DataOutputStream(byteStream);
-      dataStream.writeInt(-1);
-      byte[] sendBytes = byteStream.toByteArray();
-      outputStream.write(sendBytes);
-      outputStream.close();
-      socket.close();
-      System.out.println();
-      System.out.println("发送完成");
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(byteStream);
+        dataStream.writeInt(-1);
+        byte[] sendBytes = byteStream.toByteArray();
+        outputStream.write(sendBytes);
+        outputStream.close();
+        socket.close();
+        System.out.println();
+        System.out.println("发送完成");
 
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        // 输出连接错误信息
+        System.out.println("连接错误：" + e.getMessage());
+
+        try {
+          // 等待 1 秒后重试连接
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+          ex.printStackTrace();
+        }
+      }
     }
   }
 
@@ -541,8 +550,6 @@ class MainClient2 {
       int bucketNumber = -1;
       int index = -1;
       // 读取数据
-      byte[] receiveBytes = new byte[1024 * 128]; // 接收缓冲区
-      int bytesRead;
 
       // 开始接收数据
       while (true) {
@@ -571,10 +578,10 @@ class MainClient2 {
             N_Buckets.get(ClientID)[0] = bucketNumber - 1;
           }
         }
-
+        int bytesRead = 0;
         byte[] chunkData = new byte[chunkSize * 8];
-        if ((bytesRead = inputStream.read(chunkData, 0, chunkSize * 8)) != 8 * chunkSize) {
-          System.out.println(bytesRead + " " + receiveBytes.toString());
+        while ((bytesRead += inputStream.read(chunkData, bytesRead, chunkSize * 8 - bytesRead)) < 8 * chunkSize) {
+          continue;
         }
 
         LongArray chunklongArray = LongArray.LoadfromBytes(chunkData);
@@ -649,11 +656,7 @@ class MainClient2 {
       // 发送握手消息
 
       while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
-        try {
-          Thread.sleep(1);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+        continue;
       }
     }
     long endTime = System.currentTimeMillis();
@@ -666,7 +669,6 @@ class MainClient2 {
   }
 
   private static void MultiMergeBucket() {
-    long merge_start = System.currentTimeMillis();
     int id_bucket;
     while (!StartProcess) {
       try {
@@ -675,6 +677,7 @@ class MainClient2 {
         e.printStackTrace();
       }
     }
+    long merge_start = System.currentTimeMillis();
     for (id_bucket = 0; id_bucket < NUM_STR_HIGH; id_bucket++) {
       while (true) {
         boolean run = false;
@@ -750,11 +753,7 @@ class MainClient2 {
       for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
 
         while (Bucket_Merged < i_buck) {
-          try {
-            Thread.sleep(1);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+          continue;
         }
 
         for (; Outputindex - Sumbuckets < Client_data_str.get(i_buck).get(0).size(); Outputindex += gap) {
@@ -777,13 +776,13 @@ class MainClient2 {
   }
 
   public static void main(String[] args) {
-    if (args.length < 1) {
-      System.out.println("请提供文件名");
-      System.exit(1);
-    }
+    // if (args.length < 1) {
+    // System.out.println("请提供文件名");
+    // System.exit(1);
+    // }
 
-    // filename_READ = "F:\\Project\\BigDataSort\\data1G.txt";
-    filename_READ = args[0];
+    filename_READ = "F:\\Project\\BigDataSort\\data1G.txt";
+    // filename_READ = args[0];
 
     System.out.println("文件名: " + filename_READ);
 

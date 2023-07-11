@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MainClient2",
+            "request": "launch",
+            "mainClass": "MainClient2",
+            "projectName": "BigDataSort_4c9e9177"
+        },
+        {
+            "type": "java",
             "name": "MainClient",
             "request": "launch",
             "mainClass": "MainClient",
