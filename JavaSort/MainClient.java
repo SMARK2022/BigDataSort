@@ -452,7 +452,11 @@ class MainClient {
             while (!handshakeMsg.equals("c")) {
               // System.out.println("-");
               handshakeMsg = inputStream.readUTF();
-              continue;
+              try {
+                Thread.sleep(1);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
             }
 
           }
@@ -581,7 +585,11 @@ class MainClient {
         int bytesRead = 0;
         byte[] chunkData = new byte[chunkSize * 8];
         while ((bytesRead += inputStream.read(chunkData, bytesRead, chunkSize * 8 - bytesRead)) < 8 * chunkSize) {
-          continue;
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         }
 
         LongArray chunklongArray = LongArray.LoadfromBytes(chunkData);
@@ -656,7 +664,11 @@ class MainClient {
       // 发送握手消息
 
       while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
-        continue;
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }
     long endTime = System.currentTimeMillis();
@@ -753,7 +765,11 @@ class MainClient {
       for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
 
         while (Bucket_Merged < i_buck) {
-          continue;
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         }
 
         for (; Outputindex - Sumbuckets < Client_data_str.get(i_buck).get(0).size(); Outputindex += gap) {
@@ -776,13 +792,13 @@ class MainClient {
   }
 
   public static void main(String[] args) {
-    // if (args.length < 1) {
-    // System.out.println("请提供文件名");
-    // System.exit(1);
-    // }
+    if (args.length < 1) {
+      System.out.println("请提供文件名");
+      System.exit(1);
+    }
 
-    filename_READ = "F:\\Project\\BigDataSort\\data1G.txt";
-    // filename_READ = args[0];
+    // filename_READ = "F:\\Project\\BigDataSort\\data1G.txt";
+    filename_READ = args[0];
 
     System.out.println("文件名: " + filename_READ);
 
