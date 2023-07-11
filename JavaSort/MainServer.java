@@ -512,47 +512,41 @@ class MainServer {
 
     long all_start = System.currentTimeMillis();
 
+    int Num_Ports = Integer.parseInt(args[0]);
 
+    for (int i = 0; i < Num_Ports; i++) {
+      final int threadIndex = i;
+      Thread receiveThread = new Thread(() -> {
+        ReceiveData(threadIndex + 1, 12345 + threadIndex, 6, Client_data_str);
+      });
+      receiveThread.start();
     }
 
-  for(
-
-  int i = 0;i<Num_Ports;i++)
-  {
-    final int threadIndex = i;
-    Thread receiveThread = new Thread(() -> {
-      ReceiveData(threadIndex + 1, 12345 + threadIndex, 6, Client_data_str);
+    Thread MergeThread = new Thread(() -> {
+      MultiMergeBucket();
     });
-    receiveThread.start();
+    // 启动线程
+    MergeThread.start();
+
+    Thread SaveThread = new Thread(() -> {
+      SaveData("output.txt", 2200, 100000);
+    });
+    // 启动线程
+    SaveThread.start();
+
+    try {
+      MergeThread.join();
+      SaveThread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    System.out.println("----------------------------------------------------------------------");
+
+    long all_end = System.currentTimeMillis();
+    long all_duration = all_end - all_start;
+
+    System.out.println("总共运行耗时: " + all_duration + " 毫秒");
+
   }
-
-  Thread MergeThread = new Thread(() -> {
-    MultiMergeBucket();
-  });
-  // 启动线程
-  MergeThread.start();
-
-  Thread SaveThread = new Thread(() -> {
-    SaveData("output.txt", 2200, 100000);
-  });
-  // 启动线程
-  SaveThread.start();
-
-  try
-  {
-    MergeThread.join();
-    SaveThread.join();
-  }catch(
-  InterruptedException e)
-  {
-    e.printStackTrace();
-  }
-
-  System.out.println("----------------------------------------------------------------------");
-
-  long all_end = System.currentTimeMillis();
-  long all_duration = all_end - all_start;
-
-  System.out.println("总共运行耗时: "+all_duration+" 毫秒");
-
-}}
+}
