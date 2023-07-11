@@ -123,7 +123,7 @@ class LongArray {
   }
 }
 
-class MainClient2 {
+class MainClientSender {
 
   private static final int BAR_WIDTH = 70;
   private static final int NUM_STR_HIGH = 676;
@@ -423,6 +423,24 @@ class MainClient2 {
         for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
           List<LongArray> BucketChunks = LongArray.split(thread_data_str.get(0).get(i_buck), ChunkSize);
           // 开始计时测试
+          if (BucketChunks.size() == 0) {
+            // 将发送前的信息合并成一个字节数组
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(byteStream);
+            // 发送前的信息
+            int chunkSize = 0;
+            int BucketNumber = i_buck; // 归并段编号
+            int index = 0; // 编号
+            dataStream.writeInt(chunkSize);
+            dataStream.writeInt(BucketNumber);
+            dataStream.writeInt(index);
+            byte[] sendBytes = byteStream.toByteArray();
+            outputStream.write(sendBytes);
+            while ((char) inputStream.read() != 'c') {
+              // System.out.println("-");
+              continue;
+            }
+          }
           for (int i = 0; i < BucketChunks.size(); i++) {
 
             // System.out.println("发送端：发送一个Chunk");
@@ -441,22 +459,13 @@ class MainClient2 {
             dataStream.writeInt(index);
             dataStream.write(sendData);
             byte[] sendBytes = byteStream.toByteArray();
-            if (sendBytes.length != 12 + 8 * chunkSize) {
-              System.out.println(sendBytes);
-            }
             outputStream.write(sendBytes);
 
             // 进行握手
-            handshakeMsg = inputStream.readUTF();
-            // System.out.println(handshakeMsg);
-            while (!handshakeMsg.equals("c")) {
+
+            while ((char) inputStream.read() != 'c') {
               // System.out.println("-");
-              handshakeMsg = inputStream.readUTF();
-              try {
-                Thread.sleep(1);
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              }
+              continue;
             }
 
           }
@@ -491,7 +500,7 @@ class MainClient2 {
   private static void mergeBucket(LongArray bucketA, LongArray bucketB, LongArray merged_bucket,
       int ID_Bucket) {
     // merged_data_collection.clear();
-    long merge_start = System.currentTimeMillis();
+    // long merge_start = System.currentTimeMillis();
 
     int i1 = 0, i2 = 0, sizeA = bucketA.size(), sizeB = bucketB.size();
     while (i1 < sizeA && i2 < sizeB) {
@@ -512,8 +521,8 @@ class MainClient2 {
       i2++;
     }
 
-    long merge_end = System.currentTimeMillis();
-    long merge_duration = merge_end - merge_start;
+    // long merge_end = System.currentTimeMillis();
+    // long merge_duration = merge_end - merge_start;
     // System.out.println("Thread" + ID_Bucket + " 归并排序耗时: " + merge_duration + "
     // 毫秒");
 
@@ -525,8 +534,14 @@ class MainClient2 {
     List<LongArray> ChunkBuffer = new ArrayList<>();
 
     synchronized (mutex_BucketData) {
+      while (Client_data_str.size() < NUM_STR_HIGH)
+        Client_data_str.add(new ArrayList<>());
       while (N_Buckets.size() < ClientID + 1)
         N_Buckets.add(new int[] { -1 });
+      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
+        while (DataBox.get(i_buck).size() < ClientID + 1)
+          DataBox.get(i_buck).add(new LongArray());
+      }
     }
 
     try {
@@ -562,9 +577,7 @@ class MainClient2 {
         chunkSize = inputStream.readInt();
         if (chunkSize == -1) {
           DataBox.get(bucketNumber).add(ClientID, LongArray.merge(ChunkBuffer));
-
           // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
-
           N_Buckets.get(ClientID)[0] = bucketNumber;
           break;
         }
@@ -572,43 +585,34 @@ class MainClient2 {
         bucketNumber = inputStream.readInt();
         index = inputStream.readInt();
         if (index == 0 && bucketNumber > 0) {
-          synchronized (mutex_BucketData) {
-            while (DataBox.get(bucketNumber - 1).size() < ClientID + 1)
-              DataBox.get(bucketNumber - 1).add(new LongArray());
-            DataBox.get(bucketNumber - 1).set(ClientID, LongArray.merge(ChunkBuffer));
-            ChunkBuffer = new ArrayList<>();
-            // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
-
-            N_Buckets.get(ClientID)[0] = bucketNumber - 1;
-          }
+          DataBox.get(bucketNumber - 1).set(ClientID, LongArray.merge(ChunkBuffer));
+          ChunkBuffer = new ArrayList<>();
+          // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
+          N_Buckets.get(ClientID)[0] = bucketNumber - 1;
         }
         int bytesRead = 0;
         byte[] chunkData = new byte[chunkSize * 8];
         while ((bytesRead += inputStream.read(chunkData, bytesRead, chunkSize * 8 - bytesRead)) < 8 * chunkSize) {
+          continue;
+        }
+        totalSize += chunkSize * 8;
+
+        ChunkBuffer.add(index, LongArray.LoadfromBytes(chunkData));
+        // System.out.println("写入一条");
+
+        // 对接收到的数据进行处理
+
+        // 发送握手消息
+
+        while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
           try {
             Thread.sleep(1);
           } catch (InterruptedException e) {
             e.printStackTrace();
           }
         }
+        outputStream.write((byte) 'c');
 
-        LongArray chunklongArray = LongArray.LoadfromBytes(chunkData);
-        ChunkBuffer.add(index, chunklongArray);
-        // System.out.println("写入一条");
-
-        // 对接收到的数据进行处理
-        // ...
-
-        // 发送握手消息
-        if (N_Buckets.get(ClientID)[0] - Bucket_Dealt <= NumBucketSize)
-          outputStream.writeUTF("c");
-        else {
-          while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
-            outputStream.writeUTF("w");
-          }
-          outputStream.writeUTF("c");
-
-        }
       }
       long endTime = System.currentTimeMillis();
 
@@ -632,8 +636,14 @@ class MainClient2 {
       List<List<LongArray>> DataBox) {
 
     synchronized (mutex_BucketData) {
+      while (Client_data_str.size() < NUM_STR_HIGH)
+        Client_data_str.add(new ArrayList<>());
       while (N_Buckets.size() < ClientID + 1)
         N_Buckets.add(new int[] { -1 });
+      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
+        while (DataBox.get(i_buck).size() < ClientID + 1)
+          DataBox.get(i_buck).add(new LongArray());
+      }
     }
 
     System.out.println(ClientID + "|转移端：待命中");
@@ -653,12 +663,8 @@ class MainClient2 {
     // 开始接收数据
     for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
 
-      synchronized (mutex_BucketData) {
-        while (DataBox.get(i_buck).size() < ClientID + 1)
-          DataBox.get(i_buck).add(new LongArray());
-        DataBox.get(i_buck).set(ClientID, thread_data_str.get(0).get(i_buck));
-        N_Buckets.get(ClientID)[0] = i_buck;
-      }
+      DataBox.get(i_buck).set(ClientID, thread_data_str.get(0).get(i_buck));
+      N_Buckets.get(ClientID)[0] = i_buck;
       // System.out.println("写入一条");
 
       // 发送握手消息
@@ -744,7 +750,6 @@ class MainClient2 {
   }
 
   private static void SaveData(String fileName, int start, int gap) {
-
     while (!StartProcess) {
       try {
         Thread.sleep(100);
@@ -797,8 +802,10 @@ class MainClient2 {
       System.exit(1);
     }
 
-    // filename_READ = "F:\\Project\\BigDataSort\\data1G.txt";
+    // filename_READ = "F:\\Project\\BigDataSort/output_1.txt";
     filename_READ = args[0];
+    String ip = args[1];
+    int port = Integer.parseInt(args[2]);
 
     System.out.println("文件名: " + filename_READ);
 
@@ -830,6 +837,6 @@ class MainClient2 {
             " MB/s");
     System.out.println(
         "----------------------------------------------------------------------");
-    SendData("127.0.0.1", 12345, 1024);
+    SendData(ip, port, 1024 * 64);
   }
 }

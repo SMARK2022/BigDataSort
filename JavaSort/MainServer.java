@@ -176,7 +176,7 @@ class MainServer {
   private static void mergeBucket(LongArray bucketA, LongArray bucketB, LongArray merged_bucket,
       int ID_Bucket) {
     // merged_data_collection.clear();
-    long merge_start = System.currentTimeMillis();
+    // long merge_start = System.currentTimeMillis();
 
     int i1 = 0, i2 = 0, sizeA = bucketA.size(), sizeB = bucketB.size();
     while (i1 < sizeA && i2 < sizeB) {
@@ -197,9 +197,10 @@ class MainServer {
       i2++;
     }
 
-    long merge_end = System.currentTimeMillis();
-    long merge_duration = merge_end - merge_start;
-    System.out.println("Thread" + ID_Bucket + " 归并排序耗时: " + merge_duration + " 毫秒");
+    // long merge_end = System.currentTimeMillis();
+    // long merge_duration = merge_end - merge_start;
+    // System.out.println("Thread" + ID_Bucket + " 归并排序耗时: " + merge_duration + "
+    // 毫秒");
 
   }
 
@@ -209,8 +210,14 @@ class MainServer {
     List<LongArray> ChunkBuffer = new ArrayList<>();
 
     synchronized (mutex_BucketData) {
+      while (Client_data_str.size() < NUM_STR_HIGH)
+        Client_data_str.add(new ArrayList<>());
       while (N_Buckets.size() < ClientID + 1)
         N_Buckets.add(new int[] { -1 });
+      for (int i_buck = 0; i_buck < NUM_STR_HIGH; i_buck++) {
+        while (DataBox.get(i_buck).size() < ClientID + 1)
+          DataBox.get(i_buck).add(new LongArray());
+      }
     }
 
     try {
@@ -238,8 +245,6 @@ class MainServer {
       int bucketNumber = -1;
       int index = -1;
       // 读取数据
-      byte[] receiveBytes = new byte[1024 * 128]; // 接收缓冲区
-      int bytesRead;
 
       // 开始接收数据
       while (true) {
@@ -248,9 +253,7 @@ class MainServer {
         chunkSize = inputStream.readInt();
         if (chunkSize == -1) {
           DataBox.get(bucketNumber).add(ClientID, LongArray.merge(ChunkBuffer));
-
           // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
-
           N_Buckets.get(ClientID)[0] = bucketNumber;
           break;
         }
@@ -258,39 +261,34 @@ class MainServer {
         bucketNumber = inputStream.readInt();
         index = inputStream.readInt();
         if (index == 0 && bucketNumber > 0) {
-          synchronized (mutex_BucketData) {
-            while (DataBox.get(bucketNumber - 1).size() < ClientID + 1)
-              DataBox.get(bucketNumber - 1).add(new LongArray());
-            DataBox.get(bucketNumber - 1).set(ClientID, LongArray.merge(ChunkBuffer));
-            ChunkBuffer = new ArrayList<>();
-            // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
-
-            N_Buckets.get(ClientID)[0] = bucketNumber - 1;
-          }
+          DataBox.get(bucketNumber - 1).set(ClientID, LongArray.merge(ChunkBuffer));
+          ChunkBuffer = new ArrayList<>();
+          // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
+          N_Buckets.get(ClientID)[0] = bucketNumber - 1;
         }
-
+        int bytesRead = 0;
         byte[] chunkData = new byte[chunkSize * 8];
-        if ((bytesRead = inputStream.read(chunkData, 0, chunkSize * 8)) != 8 * chunkSize) {
-          System.out.println(bytesRead + " " + receiveBytes.toString());
+        while ((bytesRead += inputStream.read(chunkData, bytesRead, chunkSize * 8 - bytesRead)) < 8 * chunkSize) {
+          continue;
         }
+        totalSize += chunkSize * 8;
 
-        LongArray chunklongArray = LongArray.LoadfromBytes(chunkData);
-        ChunkBuffer.add(index, chunklongArray);
+        ChunkBuffer.add(index, LongArray.LoadfromBytes(chunkData));
         // System.out.println("写入一条");
 
         // 对接收到的数据进行处理
-        // ...
 
         // 发送握手消息
-        if (N_Buckets.get(ClientID)[0] - Bucket_Dealt <= NumBucketSize)
-          outputStream.writeUTF("c");
-        else {
-          while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
-            outputStream.writeUTF("w");
-          }
-          outputStream.writeUTF("c");
 
+        while (N_Buckets.get(ClientID)[0] - Bucket_Dealt > NumBucketSize) {
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         }
+        outputStream.write((byte) 'c');
+
       }
       long endTime = System.currentTimeMillis();
 
@@ -334,7 +332,7 @@ class MainServer {
       while (Client_data_str.get(id_bucket).size() > 1) {
         List<LongArray> new_bucket_data = new ArrayList<>();
 
-        int newSize = Client_data_str.size();
+        int newSize = Client_data_str.get(id_bucket).size();
         ExecutorService executor = Executors.newFixedThreadPool(newSize / 2);
 
         for (int i = 0; i < newSize; i += 2) {
@@ -514,43 +512,47 @@ class MainServer {
 
     long all_start = System.currentTimeMillis();
 
-    for (int i = 0; i < NUM_STR_HIGH; i++) {
-      Client_data_str.add(new ArrayList<>());
+
     }
 
+  for(
+
+  int i = 0;i<Num_Ports;i++)
+  {
+    final int threadIndex = i;
     Thread receiveThread = new Thread(() -> {
-      ReceiveData(0, 12345, 25, Client_data_str);
+      ReceiveData(threadIndex + 1, 12345 + threadIndex, 6, Client_data_str);
     });
-    // 启动线程
     receiveThread.start();
-
-    Thread MergeThread = new Thread(() -> {
-      MultiMergeBucket();
-    });
-    // 启动线程
-    MergeThread.start();
-
-    Thread SaveThread = new Thread(() -> {
-      SaveData("output.txt", 2200, 100000);
-    });
-    // 启动线程
-    SaveThread.start();
-
-    try {
-      receiveThread.join();
-      MergeThread.join();
-      SaveThread.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
-    System.out.println(
-        "----------------------------------------------------------------------");
-
-    long all_end = System.currentTimeMillis();
-    long all_duration = all_end - all_start;
-
-    System.out.println("总共运行耗时: " + all_duration + " 毫秒");
-
   }
-}
+
+  Thread MergeThread = new Thread(() -> {
+    MultiMergeBucket();
+  });
+  // 启动线程
+  MergeThread.start();
+
+  Thread SaveThread = new Thread(() -> {
+    SaveData("output.txt", 2200, 100000);
+  });
+  // 启动线程
+  SaveThread.start();
+
+  try
+  {
+    MergeThread.join();
+    SaveThread.join();
+  }catch(
+  InterruptedException e)
+  {
+    e.printStackTrace();
+  }
+
+  System.out.println("----------------------------------------------------------------------");
+
+  long all_end = System.currentTimeMillis();
+  long all_duration = all_end - all_start;
+
+  System.out.println("总共运行耗时: "+all_duration+" 毫秒");
+
+}}
