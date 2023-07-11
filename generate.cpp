@@ -62,6 +62,7 @@ void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
         // Write the lines to file
         // std::cout << lines[0].character;
         fprintf(outputFile, lines[0].character);
+        fflush(outputFile);
         free(lines);
         std::cout << " OK" << std::endl;
         mtx.unlock(); // 不加锁就注释掉
@@ -71,23 +72,32 @@ void generateAndWriteRandomStrings(int numLines, int stringLength, int threadId)
 int main()
 {
     srand(time(0));
+
     std::string filename;
     double N_GB;
-    std::cout << "FileName:";
+
+    std::cout << "Enter the filename: ";
     std::cin >> filename;
-    std::cout << "N_GB:";
+
+    std::cout << "Enter the size in GB: ";
     std::cin >> N_GB;
-    if (!(outputFile = fopen(filename.c_str(), "wb")))
+
+    outputFile = fopen(filename.c_str(), "wb");
+
+    if (!outputFile)
     {
         std::cerr << "Failed to open file." << std::endl;
         return 1;
     }
 
     long long numLines = N_GB * 1024 * 1024 * 1024 / 16;
+    std::cout << "Lines: " << numLines << std::endl;
+
     int stringLength = 15;
-    int numThreads = std::thread::hardware_concurrency(); // Get the number of hardware threads
+    int numThreads = std::thread::hardware_concurrency();
 
     std::vector<std::thread> threads;
+
     for (int i = 0; i < numThreads; i++)
     {
         threads.emplace_back(generateAndWriteRandomStrings, i < numThreads - 1 ? numLines / numThreads : numLines - (numLines / numThreads) * (numThreads - 1), stringLength, i);
@@ -98,6 +108,7 @@ int main()
     {
         thread.join();
     }
+    fflush(outputFile);
 
     fclose(outputFile);
 
