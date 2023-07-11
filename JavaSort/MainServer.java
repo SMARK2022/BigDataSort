@@ -132,11 +132,12 @@ class MainServer {
   private static long fileSize;
   private static int Bucket_Merged = -1;
   private static int Bucket_Dealt = -1;
+  private static boolean StartProcess = false;
 
   private static List<int[]> N_Buckets = new ArrayList<>();
 
-  private static List<Object> mutex_BucketNum = new ArrayList<Object>();
-  private static final Object mutex_display = new Object();
+  private static final Object mutex_BucketData = new Object();
+  private static final Object mutex_Mergedata = new Object();
   private static List<List<LongArray>> Client_data_str = new ArrayList<>(NUM_STR_HIGH);
 
   // private static boolean cmp(long a, long b) {
@@ -161,18 +162,18 @@ class MainServer {
     System.out.flush();
   }
 
-  private static void sortData(int thread_id, List<LongArray> data) {
-    long sort_start = System.currentTimeMillis();
-    for (LongArray sublist : data) {
-      sublist.sort();
-    }
-    long sort_end = System.currentTimeMillis();
-    long sort_duration = sort_end - sort_start;
-    synchronized (mutex_display) {
-      System.out.println(
-          "Thread" + thread_id + " 分段排序耗时: " + sort_duration + " 毫秒");
-    }
-  }
+  // private static void sortData(int thread_id, List<LongArray> data) {
+  // long sort_start = System.currentTimeMillis();
+  // for (LongArray sublist : data) {
+  // sublist.sort();
+  // }
+  // long sort_end = System.currentTimeMillis();
+  // long sort_duration = sort_end - sort_start;
+  // // synchronized (mutex_display) {
+  // // System.out.println(
+  // // "Thread" + thread_id + " 分段排序耗时: " + sort_duration + " 毫秒");
+  // // }
+  // }
 
   private static void mergeBucket(LongArray bucketA, LongArray bucketB, LongArray merged_bucket,
       int ID_Bucket) {
@@ -204,19 +205,23 @@ class MainServer {
 
   }
 
-  private static void ReceiveData(int ClientID, int listenPort, int NumBucketSize, Object mutex,
+  private static void ReceiveData(int ClientID, int listenPort, int NumBucketSize,
       List<List<LongArray>> DataBox) {
     double totalSize = 0; // 总数据量（单位为字节）
     List<LongArray> ChunkBuffer = new ArrayList<>();
-    N_Buckets.add(ClientID, new int[] { -1 });
-    mutex_BucketNum.add(ClientID, new Object());
+
+    synchronized (mutex_BucketData) {
+      while (N_Buckets.size() < ClientID + 1)
+        N_Buckets.add(new int[] { -1 });
+    }
 
     try {
-      mutex_BucketNum.add(ClientID, new Object());
       ServerSocket serverSocket = new ServerSocket(listenPort);
       System.out.println(ClientID + "|接收端：监听中");
 
       Socket socket = serverSocket.accept();
+      StartProcess = true;
+
       System.out.println(ClientID + "|接收端：连接成功！");
 
       DataInputStream inputStream = new DataInputStream(socket.getInputStream());
@@ -235,40 +240,41 @@ class MainServer {
       int bucketNumber = -1;
       int index = -1;
       // 读取数据
-      byte[] receiveBytes = new byte[1024]; // 接收缓冲区
+      byte[] receiveBytes = new byte[1024 * 128]; // 接收缓冲区
       int bytesRead;
 
       // 开始接收数据
-      while ((bytesRead = inputStream.read(receiveBytes)) != -1) {
+      while (true) {
         // 读取发送前的信息
-        totalSize += bytesRead;
         // 解析接收到的数据
-        DataInputStream chunkStream = new DataInputStream(new ByteArrayInputStream(receiveBytes));
-        chunkSize = chunkStream.readInt();
+        chunkSize = inputStream.readInt();
         if (chunkSize == -1) {
           DataBox.get(bucketNumber).add(ClientID, LongArray.merge(ChunkBuffer));
-          updateProgressBar(bucketNumber + 1, NUM_STR_HIGH);
+
           // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
 
           N_Buckets.get(ClientID)[0] = bucketNumber;
           break;
         }
 
-        bucketNumber = chunkStream.readInt();
-        index = chunkStream.readInt();
+        bucketNumber = inputStream.readInt();
+        index = inputStream.readInt();
         if (index == 0 && bucketNumber > 0) {
-          synchronized (mutex) {
-            DataBox.get(bucketNumber - 1).add(ClientID, LongArray.merge(ChunkBuffer));
+          synchronized (mutex_BucketData) {
+            while (DataBox.get(bucketNumber - 1).size() < ClientID + 1)
+              DataBox.get(bucketNumber - 1).add(new LongArray());
+            DataBox.get(bucketNumber - 1).set(ClientID, LongArray.merge(ChunkBuffer));
             ChunkBuffer = new ArrayList<>();
             // System.out.println(listenPort + " 桶" + bucketNumber + "已装满");
-            updateProgressBar(bucketNumber + 2, NUM_STR_HIGH);
 
             N_Buckets.get(ClientID)[0] = bucketNumber - 1;
           }
         }
 
         byte[] chunkData = new byte[chunkSize * 8];
-        chunkStream.read(chunkData);
+        if ((bytesRead = inputStream.read(chunkData, 0, chunkSize * 8)) != 8 * chunkSize) {
+          System.out.println(bytesRead + " " + receiveBytes.toString());
+        }
 
         LongArray chunklongArray = LongArray.LoadfromBytes(chunkData);
         ChunkBuffer.add(index, chunklongArray);
@@ -292,9 +298,9 @@ class MainServer {
 
       // 输出测试结果
       long elapsedTime = endTime - startTime;
-      double speed = (double) totalSize / elapsedTime / 1024 / 1024;
+      double speed = (double) totalSize / elapsedTime * 1000 / 1024 / 1024;
       System.out.println(ClientID + "|接收端：数据接收完毕，总耗时：" + elapsedTime + "ms");
-      System.out.println(ClientID + "|接收速度：" + speed + "Bucket/s");
+      System.out.println(ClientID + "|接收速度：" + speed + "MB/s");
       N_Buckets.get(ClientID)[0] = NUM_STR_HIGH;
 
       inputStream.close();
@@ -306,7 +312,7 @@ class MainServer {
     }
   }
 
-  private static void MultiMerge() {
+  private static void MultiMergeBucket() {
     long merge_start = System.currentTimeMillis();
     int id_bucket;
     for (id_bucket = 0; id_bucket < NUM_STR_HIGH; id_bucket++) {
@@ -333,7 +339,7 @@ class MainServer {
               LongArray merged = new LongArray();
               mergeBucket(Client_data_str.get(Bucket_Merged + 1).get(index),
                   Client_data_str.get(Bucket_Merged + 1).get(index + 1), merged, index);
-              synchronized (mutex_BucketNum) {
+              synchronized (mutex_Mergedata) {
                 new_bucket_data.add(merged);
               }
             });
@@ -352,6 +358,7 @@ class MainServer {
         Client_data_str.set(Bucket_Merged + 1, new_bucket_data);
 
       }
+      updateProgressBar(id_bucket + 1, NUM_STR_HIGH);
       // System.out.println(Bucket_Merged + 1 + " OK!");
       Bucket_Merged++;
     }
@@ -489,13 +496,13 @@ class MainServer {
     }
 
     Thread receiveThread = new Thread(() -> {
-      ReceiveData(0, 12345, 25, mutex_BucketNum.get(0), Client_data_str);
+      ReceiveData(0, 12345, 25, Client_data_str);
     });
     // 启动线程
     receiveThread.start();
 
     Thread MergeThread = new Thread(() -> {
-      MultiMerge();
+      MultiMergeBucket();
     });
     // 启动线程
     MergeThread.start();

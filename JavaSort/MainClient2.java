@@ -123,7 +123,7 @@ class LongArray {
   }
 }
 
-class MainClient {
+class MainClient2 {
 
   private static final int BAR_WIDTH = 70;
   private static final int NUM_STR_HIGH = 676;
@@ -134,7 +134,7 @@ class MainClient {
 
   private static final Object mutex_data = new Object();
   private static final Object mutex_display = new Object();
-  private static final Object mutex_BucketData = new Object();
+  private static Object mutex_BucketData = new Object();
   private static final Object mutex_Mergedata = new Object();
   private static List<int[]> N_Buckets = new ArrayList<>();
   private static int Bucket_Merged = -1;
@@ -815,33 +815,6 @@ class MainClient {
             " MB/s");
     System.out.println(
         "----------------------------------------------------------------------");
-
-    for (int i = 0; i < NUM_STR_HIGH; i++) {
-      Client_data_str.add(new ArrayList<>());
-    }
-
-    Thread receiveThread = new Thread(() -> {
-      ReceiveData(0, 12345, 10, Client_data_str);
-    });
-    // 启动线程
-    receiveThread.start();
-
-    Thread transferThread = new Thread(() -> {
-      TransferData(1, 10, Client_data_str);
-    });
-    // 启动线程
-    transferThread.start();
-
-    Thread MergeThread = new Thread(() -> {
-      MultiMergeBucket();
-    });
-    // 启动线程
-    MergeThread.start();
-
-    Thread SaveThread = new Thread(() -> {
-      SaveData("output.txt", 2200, 100000);
-    });
-    // 启动线程
-    SaveThread.start();
+    SendData("127.0.0.1", 12345, 1024);
   }
 }
