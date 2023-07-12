@@ -125,7 +125,7 @@ class LongArray {
 /**
  * 主客户端服务器类
  */
-class MainClientServer {
+class MainClientSender {
 
   // 进度条宽度
   private static final int BAR_WIDTH = 70;
