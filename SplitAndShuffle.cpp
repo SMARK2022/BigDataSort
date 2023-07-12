@@ -5,17 +5,17 @@
 #include <random>
 #include <thread>
 
-void writeLinesToFile(const std::vector<std::string>& lines, const std::string& filename)
+void writeLinesToFile(const std::vector<std::string> &lines, const std::string &filename)
 {
     std::ofstream outputFile(filename, std::ios::binary);
     if (!outputFile)
     {
-        std::cout << "æ— æ³•åˆ›å»ºæ–‡ä»¶ï¼š" << filename << std::endl;
+        std::cout << "ÎŞ·¨´´½¨ÎÄ¼ş£º" << filename << std::endl;
         return;
     }
 
     std::string outputString;
-    for (const std::string& line : lines)
+    for (const std::string &line : lines)
     {
         outputString += line + "\n";
     }
@@ -25,17 +25,17 @@ void writeLinesToFile(const std::vector<std::string>& lines, const std::string& 
     outputFile.close();
 }
 
-void shuffleLinesInFile(const std::string& filename, const int numFiles)
+void shuffleLinesInFile(const std::string &filename, const int numFiles)
 {
-    // æ‰“å¼€åŸå§‹æ–‡ä»¶è¿›è¡Œè¯»å–
+    // ´ò¿ªÔ­Ê¼ÎÄ¼ş½øĞĞ¶ÁÈ¡
     std::ifstream inputFile(filename);
     if (!inputFile)
     {
-        std::cout << "æ— æ³•æ‰“å¼€æ–‡ä»¶ï¼š" << filename << std::endl;
+        std::cout << "ÎŞ·¨´ò¿ªÎÄ¼ş£º" << filename << std::endl;
         return;
     }
 
-    // è¯»å–åŸå§‹æ–‡ä»¶ä¸­çš„æ¯ä¸€è¡Œ
+    // ¶ÁÈ¡Ô­Ê¼ÎÄ¼şÖĞµÄÃ¿Ò»ĞĞ
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(inputFile, line))
@@ -44,12 +44,12 @@ void shuffleLinesInFile(const std::string& filename, const int numFiles)
     }
     inputFile.close();
 
-    // æ‰“ä¹±è¡Œçš„æ¬¡åº
+    // ´òÂÒĞĞµÄ´ÎĞò
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(lines.begin(), lines.end(), g);
 
-    // å°†è¡Œå‡åŒ€åˆ†é…è‡³å°æ–‡ä»¶ä¸­
+    // ½«ĞĞ¾ùÔÈ·ÖÅäÖÁĞ¡ÎÄ¼şÖĞ
     int numLinesPerFile = lines.size() / numFiles;
     int remainder = lines.size() % numFiles;
 
@@ -67,23 +67,31 @@ void shuffleLinesInFile(const std::string& filename, const int numFiles)
         std::vector<std::string> linesPerFile(lines.begin() + start, lines.begin() + end);
         std::string outputFilename = "output_" + std::to_string(i) + ".txt";
 
-        // åˆ›å»ºä¸€ä¸ªçº¿ç¨‹ï¼Œå°†å¤šè¡Œæ•°æ®è½¬æ¢ä¸ºä¸€ä¸ªå­—ç¬¦ä¸²ï¼Œå¹¶å†™å…¥æ–‡ä»¶
+        // ´´½¨Ò»¸öÏß³Ì£¬½«¶àĞĞÊı¾İ×ª»»ÎªÒ»¸ö×Ö·û´®£¬²¢Ğ´ÈëÎÄ¼ş
         threads.emplace_back(writeLinesToFile, linesPerFile, outputFilename);
     }
 
-    // ç­‰å¾…æ‰€æœ‰çº¿ç¨‹å®Œæˆ
-    for (std::thread& thread : threads)
+    // µÈ´ıËùÓĞÏß³ÌÍê³É
+    for (std::thread &thread : threads)
     {
         thread.join();
     }
 
-    std::cout << "è¡Œæ¬¡åºå·²æ‰“ä¹±å¹¶æˆåŠŸåˆ†é…è‡³" << numFiles << "ä¸ªå°æ–‡ä»¶ä¸­ã€‚" << std::endl;
+    std::cout << "ĞĞ´ÎĞòÒÑ´òÂÒ²¢³É¹¦·ÖÅäÖÁ" << numFiles << "¸öĞ¡ÎÄ¼şÖĞ¡£" << std::endl;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    std::string filename = "DATA12G.txt"; // è¾“å…¥æ–‡ä»¶å
-    int numFiles = 5;                   // å°æ–‡ä»¶æ•°ç›®
+    if (argc < 2) // ¶ÁÈ¡ÔÚÃüÁîÌáÊ¾ĞĞÖĞ±»¸½¼Ó¸ø³ÌĞòµÄÎÄ±¾ÎÄ¼şµØÖ·
+    {
+        std::cout << "ÇëÌá¹©ÎÄ¼şÃû" << std::endl;
+        return 1; // ·µ»Ø·ÇÁãÖµ±íÊ¾³ÌĞòÒì³£ÍË³ö
+    }
+
+    std::string filename = argv[1];
+    int numFiles = atoi(argv[2]);
+    // filename_READ = "DATA1G.txt";
+    std::cout << "ÎÄ¼şÃû: " << filename << std::endl;
 
     shuffleLinesInFile(filename, numFiles);
 

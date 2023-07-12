@@ -168,7 +168,7 @@ class MainClientSender {
    * @param progress 当前进度
    * @param total    总进度
    */
-  private static void updateProgressBar(int progress, int total) {
+  private static void updateProgressBar(int progress, int total, char status) {
     float progressPercentage = (float) progress / total;
     int progressWidth = (int) (BAR_WIDTH * progressPercentage);
 
@@ -182,7 +182,7 @@ class MainClientSender {
       System.out.print(" ");
     }
 
-    System.out.print("] " + (int) (progressPercentage * 100) + "%\r");
+    System.out.print("] " + (int) (progressPercentage * 100) + "%\r" + status);
     System.out.flush();
   }
 
@@ -372,7 +372,7 @@ class MainClientSender {
         tmp_read_lines += num[0];
       }
 
-      updateProgressBar((int) ((double) tmp_read_lines * 10000 / count), 10000);
+      updateProgressBar((int) ((double) tmp_read_lines * 10000 / count), 10000,' ');
 
       if (tmp_read_lines == count) {
         System.out.println();

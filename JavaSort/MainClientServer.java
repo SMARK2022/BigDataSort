@@ -929,6 +929,8 @@ class MainClientServer {
         "----------------------------------------------------------------------");
 
     // 启动接收数据的线程
+    if (Num_Ports == 0)
+      StartProcess = true;
     for (int i = 0; i < Num_Ports; i++) {
       final int threadIndex = i;
       Thread receiveThread = new Thread(() -> {
