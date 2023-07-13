@@ -32,7 +32,7 @@ Nine freshmen's project which can sort 120G data of strings.
 
 ## 目前的总体架构（交换机传输开销总共48G，可通过优化特征方法至36.12G）
 
-![架构最终版](src\原理图.png)
+![架构最终版](./src/原理图.png)
 
 ## ~~目前需要大家一同协作完成的工作事项：~~（已完成）
 
